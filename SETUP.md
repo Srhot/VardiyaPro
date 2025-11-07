@@ -62,19 +62,25 @@ RAILS_MAX_THREADS=5
 # Create databases (development and test)
 bundle exec rails db:create
 
-# Run migrations (Solid Gems + future models)
+# Run migrations (Solid Gems + User + Department models)
 bundle exec rails db:migrate
 
-# Load seed data (will be added in Task 1.6)
+# Load seed data (creates test users and departments)
 bundle exec rails db:seed
 ```
 
 **Expected Output:**
 - Creates `vardiyapro_development` and `vardiyapro_test` databases
-- Runs 3 migrations:
-  1. `CreateSolidCacheEntries` - PostgreSQL-backed caching
+- Runs 5 migrations:
+  1. `CreateSolidCacheEntries` - PostgreSQL-backed caching (1 table)
   2. `CreateSolidQueueTables` - Background jobs (9 tables)
-  3. `CreateSolidCableTables` - WebSocket support
+  3. `CreateSolidCableTables` - WebSocket support (1 table)
+  4. `CreateUsers` - User authentication (1 table)
+  5. `CreateDepartments` - Organizational structure (1 table)
+- **Total: 13 tables** (11 Solid + 2 VardiyaPro)
+- Seeds database with:
+  - 3 Departments (Sales, Operations, Support)
+  - 10 Users (1 admin, 1 HR, 3 managers, 5 employees)
 
 ### 5. Verify Setup
 
@@ -86,9 +92,20 @@ bundle exec rails console
 ActiveRecord::Base.connection.active?
 # Should return: true
 
-# Check Solid Gems tables exist
+# Check tables exist
 ActiveRecord::Base.connection.tables
-# Should include: solid_cache_entries, solid_queue_jobs, solid_cable_messages
+# Should include: users, departments, solid_cache_entries, solid_queue_jobs, solid_cable_messages
+
+# Verify seed data
+User.count
+# Should return: 10
+
+Department.count
+# Should return: 3
+
+# Test user retrieval
+User.find_by(email: 'admin@vardiyapro.com')
+# Should return the admin user
 ```
 
 ### 6. Start the Server
@@ -110,6 +127,40 @@ curl http://localhost:3000/up
 ```
 
 Should return HTTP 200 OK.
+
+### 8. Test JWT Authentication
+
+```bash
+# Login as admin
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@vardiyapro.com","password":"password123"}'
+```
+
+**Expected Response:**
+```json
+{
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "user": {
+      "id": 1,
+      "email": "admin@vardiyapro.com",
+      "name": "System Administrator",
+      "role": "admin",
+      "department_id": null,
+      "active": true
+    }
+  }
+}
+```
+
+**Test Credentials (from seeds):**
+- **Admin:** admin@vardiyapro.com / password123
+- **HR:** hr@vardiyapro.com / password123
+- **Manager (Sales):** manager1@vardiyapro.com / password123
+- **Manager (Operations):** manager2@vardiyapro.com / password123
+- **Manager (Support):** manager3@vardiyapro.com / password123
+- **Employee:** employee1@vardiyapro.com / password123
 
 ---
 
@@ -134,7 +185,17 @@ After running migrations, your database will have:
 ### Solid Cable (1 table)
 - `solid_cable_messages` - WebSocket messages
 
-**Total: 11 tables**
+### VardiyaPro Tables (2 tables)
+- `departments` - Organizational departments
+  - Columns: id, name (unique), description, active, timestamps
+  - Indexes: name (unique), active
+- `users` - User authentication and profiles
+  - Columns: id, email (unique), name, role, password_digest, phone, active, department_id, timestamps
+  - Indexes: email (unique), role, active, department_id
+  - Roles: admin, manager, employee, hr
+  - Foreign Keys: department_id → departments.id
+
+**Total: 13 tables** (11 Solid Stack + 2 VardiyaPro)
 
 ---
 
@@ -212,13 +273,20 @@ bundle exec rails db:drop db:create db:migrate
 
 ## What's Next?
 
-After successful setup, the following tasks will be implemented:
+After successful setup, Phase 1 (Foundation) is complete!
 
-- ✅ **Task 1.1:** Rails 8.1 project initialized
+**Phase 1 - Foundation (COMPLETE ✅):**
+- ✅ **Task 1.1:** Rails 8.1 API project initialized
 - ✅ **Task 1.2:** Database configured with ENV variables
-- ✅ **Task 1.3:** Solid Gems installed and migrated (YOU ARE HERE)
-- ⏭️ **Task 1.4:** JWT Authentication (User model, AuthController)
-- ⏭️ **Task 1.6:** Seed data (admin, managers, employees, departments)
+- ✅ **Task 1.3:** Solid Gems installed and migrated
+- ✅ **Task 1.4:** JWT Authentication (User model, AuthController)
+- ✅ **Task 1.5:** CORS configured
+- ✅ **Task 1.6:** Seed data (3 departments, 10 users) (YOU ARE HERE)
+
+**Next Phase:**
+- **Phase 2 - Core MVP:** Shift Management, Assignments API, Business rules
+- **Phase 3 - Advanced:** Reports, Notifications, Time tracking
+- **Phase 4 - Testing:** RSpec tests, Postman collection, Production prep
 
 ---
 
@@ -271,11 +339,12 @@ bundle exec rails dbconsole
 
 ## Project Status
 
-**Current Phase:** Phase 1 - Foundation
-**Completed Tasks:** 1.1, 1.2, 1.3
-**Next Task:** 1.4 - JWT Authentication
+**Current Phase:** Phase 1 - Foundation ✅ COMPLETE
+**Completed Tasks:** 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
+**Next Phase:** Phase 2 - Core MVP (Shift Management, Assignments)
 
-**Total Progress:** ~20% (Task 3/22)
+**Total Progress:** ~27% (Task 6/22)
+**Phase 1 Progress:** 100% (6/6 tasks)
 
 ---
 
