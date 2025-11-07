@@ -12,11 +12,11 @@ Rails.application.routes.draw do
       post 'auth/refresh', to: 'auth#refresh'
       delete 'auth/logout', to: 'auth#logout'
 
-      # Resources will be added here as we build the API
+      # Resources
+      resources :departments, only: [:index, :show, :create, :update]
       # resources :shifts
       # resources :assignments
       # resources :users
-      # resources :departments
       # resources :notifications
       # resources :reports, only: [] do
       #   collection do
