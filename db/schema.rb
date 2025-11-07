@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_11_000006) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_11_000007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -59,6 +59,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_11_000006) do
     t.index ["end_time"], name: "index_shifts_on_end_time"
     t.index ["shift_type"], name: "index_shifts_on_shift_type"
     t.index ["start_time"], name: "index_shifts_on_start_time"
+  end
+
+  # Assignments
+  create_table "assignments", force: :cascade do |t|
+    t.bigint "shift_id", null: false
+    t.bigint "employee_id", null: false
+    t.string "status", default: "pending", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_assignments_on_employee_id"
+    t.index ["shift_id", "employee_id"], name: "index_assignments_on_shift_id_and_employee_id", unique: true
+    t.index ["shift_id"], name: "index_assignments_on_shift_id"
+    t.index ["status"], name: "index_assignments_on_status"
   end
 
   # Solid Cache
@@ -187,6 +201,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_11_000006) do
 
   # Shift foreign keys
   add_foreign_key "shifts", "departments"
+
+  # Assignment foreign keys
+  add_foreign_key "assignments", "shifts"
+  add_foreign_key "assignments", "users", column: "employee_id"
 
   # Solid Queue foreign keys
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

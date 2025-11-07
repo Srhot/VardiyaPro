@@ -15,7 +15,13 @@ Rails.application.routes.draw do
       # Resources
       resources :departments, only: [:index, :show, :create, :update]
       resources :shifts
-      # resources :assignments
+      resources :assignments do
+        member do
+          patch :confirm
+          patch :complete
+          patch :cancel
+        end
+      end
       # resources :users
       # resources :notifications
       # resources :reports, only: [] do
