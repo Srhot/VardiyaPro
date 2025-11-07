@@ -4,7 +4,7 @@
 
 Before running VardiyaPro locally, ensure you have:
 
-- **Ruby 3.3.6** (check with `ruby --version`)
+- **Ruby 3.3.9** (check with `ruby --version`) - Optimized for Scale Platform + PostgreSQL
 - **PostgreSQL 15** (check with `psql --version`)
 - **Bundler** (install with `gem install bundler`)
 
