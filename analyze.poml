@@ -1,0 +1,572 @@
+<poml>
+  <role>Quality Assurance Analyst for VardiyaPro</role>
+  <task>Cross-document consistency validation - detect contradictions, gaps, and constitutional violations</task>
+
+  <document src="constitution.poml" type="constraints" priority="critical"/>
+  <document src="specification.poml" type="requirements" priority="high"/>
+  <document src="technical-plan.poml" type="design" priority="high"/>
+  <document src="tasks.poml" type="implementation" priority="medium"/>
+
+  <analysis>
+
+    <!-- CROSS-REFERENCE CHECKS -->
+    <cross-reference-check category="security">
+      <title>Security Requirements Validation</title>
+
+      <check id="sec-001" status="PASS">
+        <requirement source="constitution.poml">JWT-based authentication mandatory</requirement>
+        <implementation source="technical-plan.poml">JWT auth with bcrypt + jwt gem</implementation>
+        <task source="tasks.poml">Task 1.4 - Setup JWT Authentication</task>
+        <verdict>✅ Consistent - JWT implemented in Tech Plan and scheduled in Task 1.4</verdict>
+      </check>
+
+      <check id="sec-002" status="PASS">
+        <requirement source="constitution.poml">ENV variables for all secrets, never commit .env</requirement>
+        <implementation source="technical-plan.poml">database.yml uses ENV.fetch, .env in .gitignore</implementation>
+        <task source="tasks.poml">Task 1.2 - Configure Database with ENV Variables</task>
+        <verdict>✅ Consistent - ENV strategy implemented, .gitignore updated</verdict>
+      </check>
+
+      <check id="sec-003" status="PASS">
+        <requirement source="constitution.poml">HTTPS in production (force_ssl)</requirement>
+        <implementation source="technical-plan.poml">Production config: force_ssl = true</implementation>
+        <task source="tasks.poml">Task 4.5 - Production Configuration Check</task>
+        <verdict>✅ Consistent - Production HTTPS verified in final phase</verdict>
+      </check>
+
+      <check id="sec-004" status="PASS">
+        <requirement source="constitution.poml">CORS: '*' in dev, ENV in production</requirement>
+        <implementation source="technical-plan.poml">config/initializers/cors.rb with conditional origins</implementation>
+        <task source="tasks.poml">Task 1.5 - Configure CORS</task>
+        <verdict>✅ Consistent - CORS security implemented correctly</verdict>
+      </check>
+
+      <check id="sec-005" status="PASS">
+        <requirement source="constitution.poml">Role-based authorization (RBAC)</requirement>
+        <implementation source="technical-plan.poml">Pundit gem for authorization policies</implementation>
+        <task source="tasks.poml">Task 2.3 - Shifts API with authorization (Pundit)</task>
+        <verdict>✅ Consistent - Pundit selected and integrated in Phase 2</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="testing">
+      <title>Testing Requirements Validation</title>
+
+      <check id="test-001" status="PASS">
+        <requirement source="constitution.poml">RSpec framework, 70% coverage minimum</requirement>
+        <implementation source="technical-plan.poml">RSpec Rails + SimpleCov gems</implementation>
+        <task source="tasks.poml">Task 4.1 - Write RSpec Tests (≥70% coverage)</task>
+        <verdict>✅ Consistent - Testing strategy complete with coverage target</verdict>
+      </check>
+
+      <check id="test-002" status="PASS">
+        <requirement source="constitution.poml">Postman + Newman for API testing</requirement>
+        <implementation source="technical-plan.poml">Postman collection in tech plan</implementation>
+        <task source="tasks.poml">Task 4.2 - Create Postman Collection</task>
+        <verdict>✅ Consistent - Postman/Newman documented and scheduled</verdict>
+      </check>
+
+      <check id="test-003" status="PASS">
+        <requirement source="constitution.poml">FactoryBot + Faker for test data</requirement>
+        <implementation source="technical-plan.poml">factory_bot_rails, faker gems listed</implementation>
+        <task source="tasks.poml">Task 1.6 - Create Seed Data (uses Faker)</task>
+        <verdict>✅ Consistent - Test data strategy implemented</verdict>
+      </check>
+
+      <check id="test-004" status="PASS">
+        <requirement source="specification.poml">BDD E2E tests with Playwright (future)</requirement>
+        <implementation source="technical-plan.poml">Noted as Phase 2+ enhancement</implementation>
+        <task source="tasks.poml">Not in MVP tasks (correctly deferred)</task>
+        <verdict>✅ Consistent - Playwright deferred to post-MVP as planned</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="features">
+      <title>Feature Completeness Validation</title>
+
+      <check id="feat-001" status="PASS">
+        <requirement source="specification.poml">Feature: Shift Management (create, edit, delete, templates)</requirement>
+        <implementation source="technical-plan.poml">Shifts table, ShiftsController, ShiftTemplates table</implementation>
+        <task source="tasks.poml">Task 2.2 (Shift Model), 2.3 (Shifts API)</task>
+        <verdict>✅ Consistent - Full shift management implemented</verdict>
+      </check>
+
+      <check id="feat-002" status="PASS">
+        <requirement source="specification.poml">Feature: Shift Assignment with overlap/capacity validation</requirement>
+        <implementation source="technical-plan.poml">Assignments table with custom validators</implementation>
+        <task source="tasks.poml">Task 2.4 (Assignment + overlap validation), 2.5 (Assignments API)</task>
+        <verdict>✅ Consistent - Critical overlap validation explicitly addressed</verdict>
+      </check>
+
+      <check id="feat-003" status="WARNING">
+        <requirement source="specification.poml">Feature: Calendar View (daily, weekly, monthly)</requirement>
+        <implementation source="technical-plan.poml">API endpoints for shifts list with date filtering</implementation>
+        <task source="tasks.poml">Not explicitly scheduled as separate task</task>
+        <verdict>⚠️ PARTIAL - Backend API supports calendar (GET /api/v1/shifts?date_range), but frontend calendar UI not in MVP tasks. Acceptable for API-first approach, frontend can be built later.</verdict>
+        <recommendation>Document in README that calendar view requires frontend implementation using API data</recommendation>
+      </check>
+
+      <check id="feat-004" status="PASS">
+        <requirement source="specification.poml">Feature: Reporting (employee, department, overtime)</requirement>
+        <implementation source="technical-plan.poml">Reports API endpoints with complex queries</implementation>
+        <task source="tasks.poml">Task 3.3 - Create Reports API</task>
+        <verdict>✅ Consistent - Reports fully specified and scheduled</verdict>
+      </check>
+
+      <check id="feat-005" status="PASS">
+        <requirement source="specification.poml">Feature: Notifications (email + in-app)</requirement>
+        <implementation source="technical-plan.poml">Notifications table, Action Mailer mentioned</implementation>
+        <task source="tasks.poml">Task 3.1 (Notification model), 3.2 (Integration)</task>
+        <verdict>✅ Consistent - In-app notifications implemented. Email deferred to background jobs (acceptable)</verdict>
+      </check>
+
+      <check id="feat-006" status="PASS">
+        <requirement source="specification.poml">Feature: Approval Workflow (manager approval for assignments)</requirement>
+        <implementation source="specification.poml">Marked as Phase 2 feature</implementation>
+        <task source="tasks.poml">Not in MVP tasks (correctly deferred)</task>
+        <verdict>✅ Consistent - Approval workflow deferred to post-MVP, assignment status field supports it</verdict>
+      </check>
+
+      <check id="feat-007" status="PASS">
+        <requirement source="specification.poml">Feature: Shift Swap (employee-initiated)</requirement>
+        <implementation source="technical-plan.poml">SwapRequests table in Phase 2 section</implementation>
+        <task source="tasks.poml">Not in MVP tasks (correctly deferred)</task>
+        <verdict>✅ Consistent - Shift swap deferred to Phase 2</verdict>
+      </check>
+
+      <check id="feat-008" status="PASS">
+        <requirement source="specification.poml">Feature: Time Tracking (clock in/out)</requirement>
+        <implementation source="technical-plan.poml">TimeEntries table with clock_in/out columns</implementation>
+        <task source="tasks.poml">Task 3.4 - Create Time Tracking</task>
+        <verdict>✅ Consistent - Time tracking in Phase 3</verdict>
+      </check>
+
+      <check id="feat-009" status="PASS">
+        <requirement source="specification.poml">Feature: Overtime Management</requirement>
+        <implementation source="technical-plan.poml">Overtime calculation in Reports API</implementation>
+        <task source="tasks.poml">Task 3.3 - Reports API includes overtime endpoint</task>
+        <verdict>✅ Consistent - Overtime calculated in reports</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="database">
+      <title>Database Schema Completeness</title>
+
+      <check id="db-001" status="PASS">
+        <requirement source="specification.poml">User roles: Admin, Manager, Employee, HR</requirement>
+        <implementation source="technical-plan.poml">Users table with role:string column</implementation>
+        <task source="tasks.poml">Task 1.4 creates User model with role</task>
+        <verdict>✅ Consistent - All 4 roles supported via enum/string column</verdict>
+      </check>
+
+      <check id="db-002" status="PASS">
+        <requirement source="specification.poml">Shift types: morning, evening, night, split, flexible, on_call</requirement>
+        <implementation source="technical-plan.poml">Shifts.shift_type:string with validation inclusion</implementation>
+        <task source="tasks.poml">Task 2.2 - Shift validations include shift_type</task>
+        <verdict>✅ Consistent - All 6 shift types supported</verdict>
+      </check>
+
+      <check id="db-003" status="PASS">
+        <requirement source="specification.poml">Assignment statuses: pending, confirmed, declined, completed, cancelled</requirement>
+        <implementation source="technical-plan.poml">Assignments.status:string with validation</implementation>
+        <task source="tasks.poml">Task 2.4 - Assignment model with status field</task>
+        <verdict>✅ Consistent - All 5 statuses defined</verdict>
+      </check>
+
+      <check id="db-004" status="PASS">
+        <requirement source="specification.poml">Departments for organizational structure</requirement>
+        <implementation source="technical-plan.poml">Departments table with name, description</implementation>
+        <task source="tasks.poml">Task 2.1 - Create Department Model</task>
+        <verdict>✅ Consistent - Departments implemented</verdict>
+      </check>
+
+      <check id="db-005" status="PASS">
+        <requirement source="specification.poml">Shift templates for recurring patterns</requirement>
+        <implementation source="technical-plan.poml">ShiftTemplates table</implementation>
+        <task source="tasks.poml">Not in MVP tasks (acceptable - can be added later)</task>
+        <verdict>✅ Acceptable - Table designed, implementation deferred</verdict>
+      </check>
+
+      <check id="db-006" status="PASS">
+        <requirement source="specification.poml">Holidays management</requirement>
+        <implementation source="technical-plan.poml">Holidays table with name, date</implementation>
+        <task source="tasks.poml">Task 3.5 - Create Holiday Model</task>
+        <verdict>✅ Consistent - Holidays in Phase 3</verdict>
+      </check>
+
+      <check id="db-007" status="PASS">
+        <requirement source="technical-plan.poml">8 core tables: users, departments, shifts, assignments, shift_templates, time_entries, notifications, holidays</requirement>
+        <implementation>All 8 tables defined in technical-plan.poml schema section</implementation>
+        <task>All tables covered across phases 1-3</task>
+        <verdict>✅ Consistent - Complete database schema</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="api">
+      <title>API Endpoints Coverage</title>
+
+      <check id="api-001" status="PASS">
+        <requirement source="technical-plan.poml">~30 API endpoints across 7 resources</requirement>
+        <implementation>
+          Resources: Auth, Shifts, Assignments, Users, Reports, Notifications, Departments
+          Endpoints documented in technical-plan.poml
+        </implementation>
+        <task>
+          - Auth: Task 1.4
+          - Shifts: Task 2.3
+          - Assignments: Task 2.5
+          - Departments: Task 2.1
+          - Reports: Task 3.3
+          - Notifications: Task 3.1
+          - Users: Implicitly covered in Task 1.4
+        </task>
+        <verdict>✅ Consistent - All major resources have API tasks</verdict>
+      </check>
+
+      <check id="api-002" status="PASS">
+        <requirement source="constitution.poml">API versioning (/api/v1) for breaking changes</requirement>
+        <implementation source="technical-plan.poml">All endpoints under /api/v1 namespace</implementation>
+        <task>Controllers created as Api::V1::*Controller</task>
+        <verdict>✅ Consistent - Versioning strategy applied</verdict>
+      </check>
+
+      <check id="api-003" status="PASS">
+        <requirement source="technical-plan.poml">Pagination with Kaminari, 25 records/page default</requirement>
+        <implementation source="technical-plan.poml">Kaminari gem, pagination in list endpoints</implementation>
+        <task source="tasks.poml">Task 2.3 - Shifts API includes pagination</task>
+        <verdict>✅ Consistent - Pagination strategy defined</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="architecture">
+      <title>Architectural Principles Adherence</title>
+
+      <check id="arch-001" status="PASS">
+        <requirement source="constitution.poml">Service Objects for complex business logic</requirement>
+        <implementation source="technical-plan.poml">Service Objects pattern documented, examples given</implementation>
+        <task source="tasks.poml">Task 2.5 mentions Assignments::CreateService</task>
+        <verdict>✅ Consistent - Service Objects pattern adopted</verdict>
+      </check>
+
+      <check id="arch-002" status="PASS">
+        <requirement source="constitution.poml">Solid Stack: Cache, Queue, Cable</requirement>
+        <implementation source="technical-plan.poml">solid_cache, solid_queue, solid_cable gems</implementation>
+        <task source="tasks.poml">Task 1.3 - Install Solid Gems (with migrations)</task>
+        <verdict>✅ Consistent - Solid Stack fully integrated</verdict>
+      </check>
+
+      <check id="arch-003" status="PASS">
+        <requirement source="constitution.poml">N+1 query prevention (Bullet gem)</requirement>
+        <implementation source="technical-plan.poml">Bullet gem in development group</implementation>
+        <task source="tasks.poml">Mentioned in Scale Platform lessons (Task 1.3 reminder)</task>
+        <verdict>✅ Consistent - N+1 detection configured</verdict>
+      </check>
+
+      <check id="arch-004" status="PASS">
+        <requirement source="specification.poml">Scale Platform pattern alignment</requirement>
+        <implementation source="technical-plan.poml">9 Scale Platform lessons documented</implementation>
+        <task source="tasks.poml">Lessons integrated into task descriptions</task>
+        <verdict>✅ Consistent - Scale Platform best practices applied</verdict>
+      </check>
+    </cross-reference-check>
+
+    <cross-reference-check category="performance">
+      <title>Performance Standards</title>
+
+      <check id="perf-001" status="PASS">
+        <requirement source="constitution.poml">API response time <200ms average</requirement>
+        <implementation source="technical-plan.poml">Caching strategy with Solid Cache, N+1 prevention</implementation>
+        <task>Performance considerations in all API tasks</task>
+        <verdict>✅ Consistent - Performance optimizations planned</verdict>
+      </check>
+
+      <check id="perf-002" status="PASS">
+        <requirement source="constitution.poml">Pagination mandatory for lists</requirement>
+        <implementation source="technical-plan.poml">Kaminari pagination, 25/page default, 100 max</implementation>
+        <task source="tasks.poml">Task 2.3 explicitly includes pagination</task>
+        <verdict>✅ Consistent - Pagination enforced</verdict>
+      </check>
+
+      <check id="perf-003" status="PASS">
+        <requirement source="constitution.poml">No N+1 queries in production (Immutable Rule #5)</requirement>
+        <implementation source="technical-plan.poml">Bullet gem + includes() usage documented</implementation>
+        <task>Scale Platform lesson in Task 1.3, enforced in Phase 2</task>
+        <verdict>✅ Consistent - N+1 prevention is critical path item</verdict>
+      </check>
+    </cross-reference-check>
+
+    <!-- CONSTITUTIONAL COMPLIANCE -->
+    <constitutional-compliance>
+      <title>Validation Against The Immutables</title>
+
+      <immutable id="imm-001" status="COMPLIANT">
+        <rule>Never commit sensitive data (.env, secrets)</rule>
+        <evidence>
+          - Task 1.2: Add .env to .gitignore
+          - .env.example provided (no real secrets)
+          - JWT_SECRET from ENV in production
+        </evidence>
+        <verdict>✅ COMPLIANT - Security protocols enforced</verdict>
+      </immutable>
+
+      <immutable id="imm-002" status="COMPLIANT">
+        <rule>Tests must pass before merge to main</rule>
+        <evidence>
+          - Task 4.1: RSpec tests with 70% coverage
+          - Phase 4 dedicated to testing
+          - Postman/Newman automated tests
+        </evidence>
+        <verdict>✅ COMPLIANT - Testing strategy comprehensive</verdict>
+      </immutable>
+
+      <immutable id="imm-003" status="COMPLIANT">
+        <rule>No direct production database manipulation (use migrations)</rule>
+        <evidence>
+          - All schema changes via migrations
+          - Task 1.3: Solid gems migrations
+          - Task 2.x: All models created with rails g model (generates migrations)
+        </evidence>
+        <verdict>✅ COMPLIANT - Migration-based schema management</verdict>
+      </immutable>
+
+      <immutable id="imm-004" status="COMPLIANT">
+        <rule>API breaking changes require versioning (/api/v2)</rule>
+        <evidence>
+          - All endpoints under /api/v1 namespace
+          - Technical plan documents versioning strategy
+          - Future v2 path established
+        </evidence>
+        <verdict>✅ COMPLIANT - Versioning strategy in place</verdict>
+      </immutable>
+
+      <immutable id="imm-005" status="COMPLIANT">
+        <rule>No N+1 queries in production</rule>
+        <evidence>
+          - Bullet gem installed (Task 1.3 reminder)
+          - Technical plan emphasizes includes() usage
+          - Scale Platform lesson #7 addresses this
+        </evidence>
+        <verdict>✅ COMPLIANT - N+1 prevention enforced</verdict>
+      </immutable>
+
+      <immutable id="imm-006" status="COMPLIANT">
+        <rule>README must match reality</rule>
+        <evidence>
+          - Task 4.3: Update README (Phase 4)
+          - Scheduled after all features complete
+          - Includes setup, API docs, troubleshooting
+        </evidence>
+        <verdict>✅ COMPLIANT - Documentation update scheduled</verdict>
+      </immutable>
+    </constitutional-compliance>
+
+    <!-- CRITICAL BUSINESS RULES -->
+    <business-rules-validation>
+      <title>Core Business Logic Implementation</title>
+
+      <rule id="br-001" status="PASS">
+        <requirement source="specification.poml">No overlapping shift assignments</requirement>
+        <implementation source="technical-plan.poml">Assignment model: no_overlapping_shifts validator</implementation>
+        <task source="tasks.poml">Task 2.4 explicitly implements overlap validation logic</task>
+        <verdict>✅ PASS - Overlap prevention is critical path, explicitly coded</verdict>
+      </rule>
+
+      <rule id="br-002" status="PASS">
+        <requirement source="specification.poml">Shift capacity enforcement</requirement>
+        <implementation source="technical-plan.poml">Assignment model: shift_capacity_not_exceeded validator</implementation>
+        <task source="tasks.poml">Task 2.4 includes capacity validation</task>
+        <verdict>✅ PASS - Capacity limits enforced at model level</verdict>
+      </rule>
+
+      <rule id="br-003" status="PASS">
+        <requirement source="specification.poml">Shift duration 4-12 hours</requirement>
+        <implementation source="technical-plan.poml">Shift model: custom duration validator</implementation>
+        <task source="tasks.poml">Task 2.2 validations include duration check</task>
+        <verdict>✅ PASS - Duration constraints enforced</verdict>
+      </rule>
+
+      <rule id="br-004" status="PASS">
+        <requirement source="specification.poml">Overtime: 8h/day, 40h/week threshold</requirement>
+        <implementation source="technical-plan.poml">Reports API calculates overtime with configurable thresholds</implementation>
+        <task source="tasks.poml">Task 3.3 - Reports include overtime calculation</task>
+        <verdict>✅ PASS - Overtime rules implemented in reports</verdict>
+      </rule>
+
+      <rule id="br-005" status="PASS">
+        <requirement source="specification.poml">Past shifts are read-only</requirement>
+        <implementation source="specification.poml">Business rule documented, enforcement in controller/policy</implementation>
+        <task>Implicitly handled via Pundit policies (Task 2.3)</task>
+        <verdict>✅ ACCEPTABLE - Policy layer will enforce, not critical for MVP</verdict>
+      </rule>
+    </business-rules-validation>
+
+    <!-- GAPS AND MISSING ITEMS -->
+    <gap-analysis>
+      <title>Potential Gaps and Omissions</title>
+
+      <gap id="gap-001" severity="LOW">
+        <description>Calendar UI not in tasks</description>
+        <impact>Backend supports calendar via API, but no frontend UI task</impact>
+        <resolution>ACCEPTABLE - API-first approach, frontend can be built separately</resolution>
+        <recommendation>Document in README that calendar requires frontend implementation</recommendation>
+      </gap>
+
+      <gap id="gap-002" severity="LOW">
+        <description>Email notifications (Action Mailer) not explicitly tasked</description>
+        <impact>In-app notifications implemented, email mentioned but not scheduled</impact>
+        <resolution>ACCEPTABLE - In-app sufficient for MVP, email via Solid Queue can be added</resolution>
+        <recommendation>Phase 5 (post-MVP) enhancement</recommendation>
+      </gap>
+
+      <gap id="gap-003" severity="LOW">
+        <description>User CRUD endpoints not explicitly tasked</description>
+        <impact>Users table created, but no dedicated API task for user management</impact>
+        <resolution>MINOR - Admin user management can be added in Phase 4 or post-MVP</resolution>
+        <recommendation>Task 4.3 can add user management endpoints if needed</recommendation>
+      </gap>
+
+      <gap id="gap-004" severity="NONE">
+        <description>Approval Workflow and Shift Swap deferred</description>
+        <impact>Spec includes these as Phase 2 features</impact>
+        <resolution>CORRECT - Intentionally deferred to post-MVP</resolution>
+        <recommendation>No action needed, correctly scoped</recommendation>
+      </gap>
+
+      <gap id="gap-005" severity="NONE">
+        <description>ShiftTemplates table designed but not implemented in MVP</description>
+        <impact>Recurring shift templates deferred</impact>
+        <resolution>ACCEPTABLE - Manual shift creation sufficient for MVP</resolution>
+        <recommendation>Phase 5 enhancement</recommendation>
+      </gap>
+    </gap-analysis>
+
+    <!-- DEPENDENCIES AND CRITICAL PATH -->
+    <dependency-validation>
+      <title>Task Dependencies Verification</title>
+
+      <check id="dep-001" status="PASS">
+        <description>Task 1.3 (Solid Gems) depends on 1.2 (Database)</description>
+        <rationale>Migrations require database to exist</rationale>
+        <verdict>✅ Correct dependency</verdict>
+      </check>
+
+      <check id="dep-002" status="PASS">
+        <description>Task 2.4 (Assignments) depends on 2.2 (Shifts)</description>
+        <rationale>Assignments reference Shifts, must exist first</rationale>
+        <verdict>✅ Correct dependency</verdict>
+      </check>
+
+      <check id="dep-003" status="PASS">
+        <description>Task 3.2 (Notification Integration) depends on 3.1 (Notification Model) and 2.5 (Assignments API)</description>
+        <rationale>Can't integrate notifications before model exists or assignments work</rationale>
+        <verdict>✅ Correct dependencies</verdict>
+      </check>
+
+      <check id="dep-004" status="PASS">
+        <description>Task 4.1 (Tests) depends on Phase 3 complete</description>
+        <rationale>Can't test features that don't exist yet</rationale>
+        <verdict>✅ Correct dependency - tests come after implementation</verdict>
+      </check>
+
+      <check id="dep-005" status="WARNING">
+        <description>Task 2.1 (Departments) could be parallel to 1.6 (Seeds)</description>
+        <rationale>Departments don't depend on User seeds, could save time</rationale>
+        <verdict>⚠️ OPTIMIZATION - Minor, not blocking</verdict>
+        <recommendation>Implement departments in parallel with user seeds for efficiency</recommendation>
+      </check>
+    </dependency-validation>
+
+    <!-- ESTIMATION VALIDATION -->
+    <estimation-review>
+      <title>Time Estimates Reasonableness</title>
+
+      <phase id="1" estimated="8h" assessment="REASONABLE">
+        <rationale>Rails init + JWT setup is standard work, 8h appropriate for thorough setup</rationale>
+      </phase>
+
+      <phase id="2" estimated="12h" assessment="REASONABLE">
+        <rationale>Core models + API + critical validations (overlap logic complex), 12h realistic</rationale>
+      </phase>
+
+      <phase id="3" estimated="10h" assessment="REASONABLE">
+        <rationale>Reports SQL queries + notifications + time tracking, 10h appropriate</rationale>
+      </phase>
+
+      <phase id="4" estimated="8h" assessment="REASONABLE">
+        <rationale>Writing comprehensive tests + Postman collection + docs takes time, 8h realistic</rationale>
+      </phase>
+
+      <total estimated="38h" assessment="REASONABLE">
+        <note>~5 days of focused work for experienced Rails developer</note>
+        <note>May take 7-10 days for learning/debugging/iteration</note>
+      </total>
+    </estimation-review>
+
+  </analysis>
+
+  <!-- FINAL VERDICT -->
+  <verdict>
+    <overall-status>✅ PASS - READY FOR IMPLEMENTATION</overall-status>
+
+    <summary>
+      All four POML documents (Constitution, Specification, Technical Plan, Tasks) are internally consistent
+      and mutually aligned. No critical contradictions or gaps detected.
+
+      <critical-items-verified>
+        ✅ All constitutional requirements met
+        ✅ All immutable rules enforced
+        ✅ Core features implemented (Shifts, Assignments, Reports, Notifications)
+        ✅ Critical business rules coded (overlap, capacity, duration)
+        ✅ Security standards enforced (JWT, ENV, CORS, HTTPS)
+        ✅ Testing strategy comprehensive (RSpec 70%, Postman/Newman)
+        ✅ Database schema complete (8 tables, all relationships)
+        ✅ API endpoints comprehensive (~30 endpoints, 7 resources)
+        ✅ Scale Platform lessons integrated
+        ✅ Dependencies validated
+      </critical-items-verified>
+
+      <minor-gaps-acceptable>
+        ⚠️ Calendar UI deferred (backend API supports, frontend separate)
+        ⚠️ Email notifications deferred (in-app sufficient for MVP)
+        ⚠️ User management API not explicitly tasked (can add in Phase 4)
+      </minor-gaps-acceptable>
+
+      <intentional-deferrals>
+        ✓ Approval Workflow (Phase 2+)
+        ✓ Shift Swap (Phase 2+)
+        ✓ Shift Templates implementation (Phase 2+)
+        ✓ Playwright E2E tests (Phase 2+)
+        ✓ Third-party integrations (Phase 3+)
+      </intentional-deferrals>
+    </summary>
+
+    <recommendations>
+      <recommendation priority="CRITICAL">
+        Task 1.3: DO NOT SKIP Solid Gems migrations - app will fail to boot without them
+      </recommendation>
+
+      <recommendation priority="CRITICAL">
+        Task 2.4: Overlap validation logic is core value proposition - implement thoroughly with tests
+      </recommendation>
+
+      <recommendation priority="HIGH">
+        Task 2.3: Add Bullet gem warnings to development - catch N+1 queries early
+      </recommendation>
+
+      <recommendation priority="MEDIUM">
+        Task 4.3: Document in README that calendar view requires separate frontend implementation
+      </recommendation>
+
+      <recommendation priority="LOW">
+        Consider adding User management endpoints in Phase 4 or post-MVP
+      </recommendation>
+    </recommendations>
+
+    <approval>
+      <status>APPROVED FOR IMPLEMENTATION</status>
+      <next-phase>Phase 1 (Foundation) - Begin with Task 1.1: Initialize Rails 8.1 Project</next-phase>
+      <estimated-completion>5-10 days for MVP (Phases 1-4)</estimated-completion>
+    </approval>
+  </verdict>
+
+</poml>
