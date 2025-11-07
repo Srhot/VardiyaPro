@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_11_000005) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_11_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -40,6 +40,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_11_000005) do
     t.index ["department_id"], name: "index_users_on_department_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["role"], name: "index_users_on_role"
+  end
+
+  # Shifts
+  create_table "shifts", force: :cascade do |t|
+    t.bigint "department_id", null: false
+    t.string "shift_type", null: false
+    t.datetime "start_time", null: false
+    t.datetime "end_time", null: false
+    t.integer "required_staff", default: 1, null: false
+    t.text "description"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_shifts_on_active"
+    t.index ["department_id", "start_time"], name: "index_shifts_on_department_id_and_start_time"
+    t.index ["department_id"], name: "index_shifts_on_department_id"
+    t.index ["end_time"], name: "index_shifts_on_end_time"
+    t.index ["shift_type"], name: "index_shifts_on_shift_type"
+    t.index ["start_time"], name: "index_shifts_on_start_time"
   end
 
   # Solid Cache
@@ -165,6 +184,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_11_000005) do
   # Foreign Keys
   # User foreign keys
   add_foreign_key "users", "departments"
+
+  # Shift foreign keys
+  add_foreign_key "shifts", "departments"
 
   # Solid Queue foreign keys
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

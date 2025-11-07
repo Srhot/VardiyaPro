@@ -14,7 +14,7 @@ Rails.application.routes.draw do
 
       # Resources
       resources :departments, only: [:index, :show, :create, :update]
-      # resources :shifts
+      resources :shifts
       # resources :assignments
       # resources :users
       # resources :notifications
