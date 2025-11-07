@@ -31,7 +31,15 @@ Rails.application.routes.draw do
         end
       end
 
-      # resources :notifications
+      resources :notifications, only: [:index, :show, :destroy] do
+        collection do
+          patch :mark_all_as_read
+          delete :destroy_all_read
+        end
+        member do
+          patch :mark_as_read
+        end
+      end
       # resources :reports, only: [] do
       #   collection do
       #     get 'employee/:id', to: 'reports#employee'

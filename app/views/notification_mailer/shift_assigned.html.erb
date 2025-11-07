@@ -1,0 +1,21 @@
+<h2>Hello <%= @employee.name %>,</h2>
+
+<p>You have been assigned to a new shift:</p>
+
+<div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+  <p><strong>Department:</strong> <%= @shift.department.name %></p>
+  <p><strong>Shift Type:</strong> <%= @shift.shift_type.titleize %></p>
+  <p><strong>Start Time:</strong> <%= @shift.start_time.strftime('%B %d, %Y at %I:%M %p') %></p>
+  <p><strong>End Time:</strong> <%= @shift.end_time.strftime('%B %d, %Y at %I:%M %p') %></p>
+  <p><strong>Duration:</strong> <%= @shift.duration_hours %> hours</p>
+  <% if @shift.description.present? %>
+    <p><strong>Description:</strong> <%= @shift.description %></p>
+  <% end %>
+</div>
+
+<p><strong>Status:</strong> <%= @assignment.status.titleize %></p>
+
+<p>Please confirm your availability for this shift.</p>
+
+<p>Best regards,<br>
+VardiyaPro Team</p>

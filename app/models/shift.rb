@@ -24,6 +24,10 @@ class Shift < ApplicationRecord
   scope :upcoming, -> { where('start_time >= ?', Time.current).order(:start_time) }
   scope :in_range, ->(start_date, end_date) { where('start_time >= ? AND end_time <= ?', start_date, end_date) }
 
+  # Callbacks
+  after_update :notify_shift_updated, if: :saved_changes?
+  before_destroy :notify_shift_deleted
+
   # Instance methods
   def duration_hours
     return 0 unless start_time && end_time
@@ -40,6 +44,18 @@ class Shift < ApplicationRecord
 
   private
 
+  # Notification callbacks
+  def notify_shift_updated
+    NotificationService.notify_shift_updated(self)
+    Rails.logger.info "📧 Shift #{id} updated, notifying assigned employees"
+  end
+
+  def notify_shift_deleted
+    NotificationService.notify_shift_deleted(self)
+    Rails.logger.info "📧 Shift #{id} being deleted, notifying assigned employees"
+  end
+
+  # Validation methods
   def end_time_after_start_time
     return if end_time.blank? || start_time.blank?
 

@@ -1,0 +1,13 @@
+Hello <%= @employee.name %>,
+
+This is a reminder about your upcoming shift:
+
+Department: <%= @shift.department.name %>
+Shift Type: <%= @shift.shift_type.titleize %>
+Date: <%= @shift.start_time.strftime('%B %d, %Y') %>
+Time: <%= @shift.start_time.strftime('%I:%M %p') %> - <%= @shift.end_time.strftime('%I:%M %p') %>
+
+Please make sure to arrive on time and be prepared.
+
+Best regards,
+VardiyaPro Team

@@ -66,14 +66,21 @@ class Assignment < ApplicationRecord
     end
   end
 
-  # Notification placeholders (will be implemented with ActionMailer/Cable)
+  # Notification callbacks
   def notify_employee
-    # TODO: Send notification to employee about new assignment
+    # Send in-app notification for new assignment
+    NotificationService.notify_shift_assigned(self)
     Rails.logger.info "📧 Assignment #{id} created for employee #{employee.email}"
   end
 
   def notify_status_change
-    # TODO: Send notification to employee about status change
+    # Send notification based on status change
+    case status
+    when 'confirmed'
+      NotificationService.notify_assignment_confirmed(self)
+    when 'cancelled'
+      NotificationService.notify_assignment_cancelled(self)
+    end
     Rails.logger.info "📧 Assignment #{id} status changed to #{status} for employee #{employee.email}"
   end
 end
