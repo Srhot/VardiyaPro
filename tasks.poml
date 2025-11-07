@@ -1,0 +1,651 @@
+<poml>
+  <role>Project Manager for VardiyaPro</role>
+  <task>Break down Technical Plan into phased, actionable implementation tasks</task>
+
+  <document src="technical-plan.poml" type="blueprint"/>
+  <document src="specification.poml" type="requirements"/>
+  <document src="constitution.poml" type="constraints"/>
+
+  <tasks>
+
+    <!-- PHASE 1: FOUNDATION -->
+    <phase id="1" name="Foundation" milestone="Rails App Running with JWT Auth">
+      <duration>~8 hours</duration>
+      <goal>
+        Working Rails 8 API with PostgreSQL, JWT authentication, and Solid Stack configured.
+        Admin can login and receive JWT token.
+      </goal>
+
+      <task id="1.1" priority="critical" estimate="1h">
+        <title>Initialize Rails 8.1 Project</title>
+        <description>
+          Create new Rails 8.1 API-only application with PostgreSQL database.
+          Lock Ruby version to 3.3.9.
+        </description>
+        <commands>
+          rails new vardiyapro --api --database=postgresql --skip-test
+          cd vardiyapro
+          echo "3.3.9" > .ruby-version
+          echo "ruby '3.3.9'" to Gemfile (first line)
+        </commands>
+        <acceptance-criteria>
+          - Project created in vardiyapro/ directory
+          - Gemfile contains Ruby 3.3.9 and Rails 8.1.0
+          - config/application.rb has API-only mode enabled
+          - .ruby-version file exists
+        </acceptance-criteria>
+        <dependencies>None</dependencies>
+      </task>
+
+      <task id="1.2" priority="critical" estimate="30min">
+        <title>Configure Database with ENV Variables</title>
+        <description>
+          Update config/database.yml to use environment variables for credentials.
+          Create .env.example file. Add .env to .gitignore.
+        </description>
+        <files-to-modify>
+          - config/database.yml (use ENV.fetch)
+          - .gitignore (add .env)
+          - .env.example (create with placeholders)
+        </files-to-modify>
+        <acceptance-criteria>
+          - database.yml uses ENV['DATABASE_USER'], ENV['DATABASE_PASSWORD']
+          - .env.example exists with all required variables
+          - .env in .gitignore
+          - rails db:create succeeds
+        </acceptance-criteria>
+        <dependencies>Task 1.1</dependencies>
+      </task>
+
+      <task id="1.3" priority="critical" estimate="1h">
+        <title>Install and Configure Solid Gems</title>
+        <description>
+          Add Solid Cache, Solid Queue, Solid Cable to Gemfile.
+          Run install migrations and db:migrate.
+        </description>
+        <commands>
+          Add to Gemfile: solid_cache, solid_queue, solid_cable
+          bundle install
+          rails solid_cache:install:migrations
+          rails solid_queue:install:migrations
+          rails solid_cable:install:migrations
+          rails db:migrate
+        </commands>
+        <acceptance-criteria>
+          - solid_* gems in Gemfile
+          - Migrations run successfully
+          - solid_cache_entries, solid_queue_* tables exist in schema
+          - rails console boots without errors
+        </acceptance-criteria>
+        <dependencies>Task 1.2</dependencies>
+        <warning>DO NOT SKIP - App won't boot without these migrations!</warning>
+      </task>
+
+      <task id="1.4" priority="critical" estimate="2h">
+        <title>Setup JWT Authentication</title>
+        <description>
+          Add bcrypt and jwt gems. Create User model with has_secure_password.
+          Create JsonWebToken concern. Create AuthController for login/refresh.
+          Create authenticate_request before_action.
+        </description>
+        <commands>
+          Add to Gemfile: bcrypt, jwt
+          bundle install
+          rails g model User email:string name:string role:string password_digest:string active:boolean
+          rails db:migrate
+          Create app/lib/json_web_token.rb
+          Create config/initializers/jwt.rb
+          Create app/controllers/concerns/authenticable.rb
+          Create app/controllers/api/v1/auth_controller.rb
+        </commands>
+        <files-to-create>
+          - app/models/user.rb (has_secure_password, validations)
+          - app/lib/json_web_token.rb (encode, decode methods)
+          - config/initializers/jwt.rb (JWT_SECRET from ENV)
+          - app/controllers/concerns/authenticable.rb (authenticate_request)
+          - app/controllers/api/v1/auth_controller.rb (login, refresh actions)
+        </files-to-create>
+        <acceptance-criteria>
+          - User model with email, password validation
+          - POST /api/v1/auth/login returns JWT token
+          - Token decodes successfully
+          - authenticate_request blocks unauthorized requests
+        </acceptance-criteria>
+        <dependencies>Task 1.3</dependencies>
+      </task>
+
+      <task id="1.5" priority="high" estimate="30min">
+        <title>Configure CORS</title>
+        <description>
+          Add rack-cors gem. Configure config/initializers/cors.rb.
+          Allow all origins in development, ENV-based in production.
+        </description>
+        <commands>
+          Add to Gemfile: rack-cors
+          bundle install
+          Create config/initializers/cors.rb
+        </commands>
+        <acceptance-criteria>
+          - rack-cors gem installed
+          - CORS allows /api/* endpoints
+          - Development: origins '*'
+          - Production: origins ENV['FRONTEND_URL']
+        </acceptance-criteria>
+        <dependencies>Task 1.1</dependencies>
+      </task>
+
+      <task id="1.6" priority="medium" estimate="1h">
+        <title>Create Seed Data for Development</title>
+        <description>
+          Add faker and factory_bot_rails gems (dev/test).
+          Create db/seeds.rb with admin user and sample data.
+        </description>
+        <commands>
+          Add to Gemfile (development, test): faker, factory_bot_rails
+          bundle install
+          Update db/seeds.rb
+          rails db:seed
+        </commands>
+        <seed-data>
+          - 1 Admin user (admin@vardiyapro.com / password123)
+          - 2 Managers (manager1@..., manager2@...)
+          - 5 Employees
+          - 3 Departments (Sales, Operations, Support)
+        </seed-data>
+        <acceptance-criteria>
+          - rails db:seed runs without errors
+          - Can login as admin@vardiyapro.com
+          - Database has 8 users, 3 departments
+        </acceptance-criteria>
+        <dependencies>Task 1.4</dependencies>
+      </task>
+
+      <phase-completion>
+        <test>POST /api/v1/auth/login with admin@vardiyapro.com returns token</test>
+        <test>Token authenticates successfully on protected endpoint</test>
+        <test>rails console → User.count == 8</test>
+      </phase-completion>
+    </phase>
+
+    <!-- PHASE 2: CORE MVP -->
+    <phase id="2" name="Core MVP" milestone="Shift Management + Assignment Working">
+      <duration>~12 hours</duration>
+      <goal>
+        Managers can create shifts, assign employees, employees can view their schedule.
+        Core business rules enforced (no overlaps, capacity limits).
+      </goal>
+
+      <task id="2.1" priority="critical" estimate="1.5h">
+        <title>Create Department Model and API</title>
+        <description>
+          Generate Department model, create API endpoints for CRUD.
+        </description>
+        <commands>
+          rails g model Department name:string description:text active:boolean
+          rails db:migrate
+          rails g controller Api::V1::Departments
+        </commands>
+        <acceptance-criteria>
+          - GET /api/v1/departments returns list
+          - POST /api/v1/departments (admin only) creates department
+          - Seed data includes 3 departments
+        </acceptance-criteria>
+        <dependencies>Task 1.6</dependencies>
+      </task>
+
+      <task id="2.2" priority="critical" estimate="2h">
+        <title>Create Shift Model with Validations</title>
+        <description>
+          Generate Shift model with all fields from technical plan.
+          Add validations: start before end, duration 4-12 hours, shift_type inclusion.
+          Add associations to User (creator) and Department.
+        </description>
+        <commands>
+          rails g model Shift title:string start_time:datetime end_time:datetime
+            shift_type:string location:string notes:text capacity:integer
+            department_id:bigint:index creator_id:bigint:index
+          rails db:migrate
+        </commands>
+        <validations>
+          - title: presence
+          - start_time, end_time: presence
+          - start_time < end_time
+          - shift_type: inclusion in %w[morning evening night split flexible on_call]
+          - duration: 4-12 hours (custom validator)
+          - capacity: numericality, allow_nil
+        </validations>
+        <acceptance-criteria>
+          - Shift model with all validations
+          - Invalid shift fails validation with clear errors
+          - rails console: Shift.create!(valid_attrs) succeeds
+        </acceptance-criteria>
+        <dependencies>Task 2.1</dependencies>
+      </task>
+
+      <task id="2.3" priority="critical" estimate="3h">
+        <title>Create Shifts API Controller</title>
+        <description>
+          Build Api::V1::ShiftsController with CRUD actions.
+          Add pagination (Kaminari), filtering (shift_type, date_range, department).
+          Add authorization (Pundit): only managers/admins create, employees view.
+        </description>
+        <endpoints>
+          - GET /api/v1/shifts (index with pagination, filters)
+          - POST /api/v1/shifts (create - manager/admin only)
+          - GET /api/v1/shifts/:id (show)
+          - PATCH /api/v1/shifts/:id (update - manager/admin)
+          - DELETE /api/v1/shifts/:id (destroy - manager/admin, no confirmed assignments)
+        </endpoints>
+        <gems-needed>
+          - kaminari (pagination)
+          - pundit (authorization)
+        </gems-needed>
+        <acceptance-criteria>
+          - GET /api/v1/shifts returns paginated JSON
+          - Filters work: ?shift_type=morning&start_date=2025-01-01
+          - Unauthorized users get 403
+          - Response includes meta: {page, per_page, total}
+        </acceptance-criteria>
+        <dependencies>Task 2.2</dependencies>
+      </task>
+
+      <task id="2.4" priority="critical" estimate="2h">
+        <title>Create Assignment Model with Overlap Validation</title>
+        <description>
+          Generate Assignment model linking employees to shifts.
+          Implement critical custom validators:
+          - no_overlapping_shifts (check employee's other assignments for time conflicts)
+          - shift_capacity_not_exceeded (count confirmed assignments vs capacity)
+        </description>
+        <commands>
+          rails g model Assignment shift:references employee:references
+            status:string confirmed_at:datetime completed_at:datetime notes:text
+          Add unique index: [employee_id, shift_id]
+          rails db:migrate
+        </commands>
+        <validations>
+          - shift, employee: presence
+          - status: inclusion in %w[pending confirmed declined completed cancelled]
+          - no_overlapping_shifts (CRITICAL - prevent double-booking)
+          - shift_capacity_not_exceeded
+        </validations>
+        <overlap-logic>
+          Query assignments for same employee where:
+            (new_start >= existing_start AND new_start < existing_end) OR
+            (new_end > existing_start AND new_end <= existing_end) OR
+            (new_start <= existing_start AND new_end >= existing_end)
+          If any found: add validation error
+        </overlap-logic>
+        <acceptance-criteria>
+          - Assignment model with status tracking
+          - Overlapping assignment validation BLOCKS creation
+          - Exceeding capacity validation BLOCKS confirmation
+          - rails console: Create 2 overlapping assignments → fails
+        </acceptance-criteria>
+        <dependencies>Task 2.2</dependencies>
+      </task>
+
+      <task id="2.5" priority="critical" estimate="3h">
+        <title>Create Assignments API Controller</title>
+        <description>
+          Build Api::V1::AssignmentsController.
+          Actions: index (role-filtered), create (assign employee), update (confirm/decline), destroy.
+          Service object: Assignments::CreateService for complex logic + notifications.
+        </description>
+        <endpoints>
+          - GET /api/v1/assignments (employees see own, managers see department)
+          - POST /api/v1/assignments (manager/admin assigns employee to shift)
+          - PATCH /api/v1/assignments/:id (employee confirms/declines, manager cancels)
+          - DELETE /api/v1/assignments/:id (unassign - manager/admin)
+        </endpoints>
+        <service-object>
+          app/services/assignments/create_service.rb
+          - Validate overlap and capacity
+          - Create assignment (status: pending)
+          - Send notification to employee (future: email job)
+          - Return Result object
+        </service-object>
+        <acceptance-criteria>
+          - POST /api/v1/assignments creates assignment
+          - Validation errors return 422 with clear messages
+          - PATCH updates status (pending → confirmed)
+          - Employee can only update own assignments
+        </acceptance-criteria>
+        <dependencies>Task 2.4</dependencies>
+      </task>
+
+      <task id="2.6" priority="high" estimate="1h">
+        <title>Seed Data: Shifts and Assignments</title>
+        <description>
+          Extend db/seeds.rb with realistic shifts and assignments.
+        </description>
+        <seed-data>
+          - 20 shifts (mix of types, departments, next 2 weeks)
+          - 30 assignments (various statuses)
+          - Ensure some shifts at capacity, some with slots
+        </seed-data>
+        <acceptance-criteria>
+          - rails db:reset runs clean
+          - Database has 20 shifts, 30 assignments
+          - Can test pagination, filtering with realistic data
+        </acceptance-criteria>
+        <dependencies>Task 2.5</dependencies>
+      </task>
+
+      <phase-completion>
+        <test>Manager creates shift via API → 201 Created</test>
+        <test>Manager assigns employee to shift → 201 Created</test>
+        <test>Assign same employee to overlapping shift → 422 Unprocessable</test>
+        <test>Shift at capacity → new assignment fails</test>
+        <test>Employee views own assignments → 200 OK with filtered list</test>
+      </phase-completion>
+    </phase>
+
+    <!-- PHASE 3: ADVANCED FEATURES -->
+    <phase id="3" name="Advanced Features" milestone="Reports, Notifications, Time Tracking">
+      <duration>~10 hours</duration>
+      <goal>
+        Reports working (employee hours, overtime), notifications sent on assignment,
+        time tracking (clock in/out) functional.
+      </goal>
+
+      <task id="3.1" priority="high" estimate="2h">
+        <title>Create Notification Model and API</title>
+        <description>
+          Generate Notification model for in-app notifications.
+          Create API endpoints: list (unread badge count), mark as read.
+        </description>
+        <commands>
+          rails g model Notification user:references title:string message:text
+            notification_type:string read_at:datetime related_type:string related_id:bigint
+          rails db:migrate
+          rails g controller Api::V1::Notifications
+        </commands>
+        <endpoints>
+          - GET /api/v1/notifications (user's notifications, unread first)
+          - PATCH /api/v1/notifications/:id/read (mark as read)
+          - GET /api/v1/notifications/unread_count
+        </endpoints>
+        <acceptance-criteria>
+          - Notification model with polymorphic related
+          - API returns notifications with unread_count in meta
+          - Mark as read updates read_at timestamp
+        </acceptance-criteria>
+        <dependencies>Phase 2 complete</dependencies>
+      </task>
+
+      <task id="3.2" priority="high" estimate="2h">
+        <title>Integrate Notifications into Assignments</title>
+        <description>
+          Update Assignments::CreateService to create notification on assignment.
+          Add notification on status change (confirmed, declined).
+        </description>
+        <notification-scenarios>
+          - Assignment created → notify employee: "You've been assigned to [Shift Title]"
+          - Assignment confirmed → notify manager: "[Employee] confirmed shift"
+          - Assignment declined → notify manager: "[Employee] declined shift"
+        </notification-scenarios>
+        <acceptance-criteria>
+          - POST /api/v1/assignments creates notification for employee
+          - Employee sees notification in GET /api/v1/notifications
+          - Unread badge count increases
+        </acceptance-criteria>
+        <dependencies>Task 3.1, Task 2.5</dependencies>
+      </task>
+
+      <task id="3.3" priority="high" estimate="3h">
+        <title>Create Reports API</title>
+        <description>
+          Build Api::V1::ReportsController with employee and overtime reports.
+          Implement complex queries: total hours, overtime calculation.
+        </description>
+        <endpoints>
+          - GET /api/v1/reports/employee/:id?start_date&end_date
+            Returns: total_hours, regular_hours, overtime_hours, shifts_count
+          - GET /api/v1/reports/overtime?start_date&end_date
+            Returns: list of employees with overtime hours
+        </endpoints>
+        <queries>
+          - Join assignments + shifts
+          - SUM(EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600) as total_hours
+          - WHERE assignments.status = 'completed'
+          - Overtime: hours > 40/week or > 8/day (configurable threshold)
+        </queries>
+        <acceptance-criteria>
+          - GET /api/v1/reports/employee/1 returns accurate hours
+          - Overtime calculated correctly (40h/week threshold)
+          - Only authorized users access (employee own, manager dept, HR/admin all)
+        </acceptance-criteria>
+        <dependencies>Phase 2 complete</dependencies>
+      </task>
+
+      <task id="3.4" priority="medium" estimate="2h">
+        <title>Create Time Tracking (Clock In/Out)</title>
+        <description>
+          Generate TimeEntry model. Create API for clock in/out.
+        </description>
+        <commands>
+          rails g model TimeEntry assignment:references
+            clock_in_time:datetime clock_out_time:datetime notes:text
+          Add unique index on assignment_id
+          rails db:migrate
+          Add endpoints to Api::V1::AssignmentsController
+        </commands>
+        <endpoints>
+          - POST /api/v1/assignments/:id/clock_in
+          - POST /api/v1/assignments/:id/clock_out
+        </endpoints>
+        <acceptance-criteria>
+          - Employee can clock in (within 15 min before shift start)
+          - Employee can clock out any time after shift start
+          - Time entry has clock_in_time and clock_out_time
+          - Actual hours calculated: clock_out - clock_in
+        </acceptance-criteria>
+        <dependencies>Task 2.5</dependencies>
+      </task>
+
+      <task id="3.5" priority="medium" estimate="1h">
+        <title>Create Holiday Model and Management</title>
+        <description>
+          Generate Holiday model. Seed with common holidays.
+          API for admins to add/edit holidays (future: warning on holiday shifts).
+        </description>
+        <commands>
+          rails g model Holiday name:string date:date
+          Add unique index on date
+          rails db:migrate
+          rails g controller Api::V1::Holidays
+        </commands>
+        <acceptance-criteria>
+          - Holiday model with name, date
+          - Seeds include 5-10 holidays for 2025
+          - GET /api/v1/holidays returns list
+        </acceptance-criteria>
+        <dependencies>Phase 2 complete</dependencies>
+      </task>
+
+      <phase-completion>
+        <test>Employee report shows accurate total hours and overtime</test>
+        <test>Assignment creation sends notification to employee</test>
+        <test>Employee clocks in/out successfully</test>
+        <test>Notifications API returns unread count</test>
+      </phase-completion>
+    </phase>
+
+    <!-- PHASE 4: TESTING & PRODUCTION PREP -->
+    <phase id="4" name="Testing & Production Prep" milestone="Tests Passing, Docs Complete, Deploy Ready">
+      <duration>~8 hours</duration>
+      <goal>
+        70% test coverage, Postman collection complete, README updated, production-ready.
+      </goal>
+
+      <task id="4.1" priority="high" estimate="4h">
+        <title>Write RSpec Tests</title>
+        <description>
+          Create model specs, request specs (integration tests).
+          Focus on critical features: authentication, overlap validation, capacity limits.
+        </description>
+        <test-coverage>
+          Model specs:
+          - spec/models/user_spec.rb (validations, authentication)
+          - spec/models/shift_spec.rb (validations, duration, scopes)
+          - spec/models/assignment_spec.rb (overlap validation, capacity)
+
+          Request specs:
+          - spec/requests/auth_spec.rb (login, refresh, unauthorized)
+          - spec/requests/shifts_spec.rb (CRUD, pagination, authorization)
+          - spec/requests/assignments_spec.rb (create, overlap errors, confirm)
+          - spec/requests/reports_spec.rb (employee report accuracy)
+        </test-coverage>
+        <commands>
+          Add to Gemfile (test): rspec-rails, factory_bot_rails, faker, simplecov
+          bundle install
+          rails g rspec:install
+          Create spec/factories for User, Shift, Assignment
+          Write specs
+          rspec --format documentation
+        </commands>
+        <acceptance-criteria>
+          - rspec runs all specs successfully
+          - SimpleCov reports ≥70% coverage
+          - Critical validations tested (overlap, capacity, auth)
+        </acceptance-criteria>
+        <dependencies>Phase 3 complete</dependencies>
+      </task>
+
+      <task id="4.2" priority="high" estimate="2h">
+        <title>Create Postman Collection</title>
+        <description>
+          Document all API endpoints in Postman collection.
+          Add pre-request scripts for JWT token injection.
+          Add tests for status codes and response schemas.
+        </description>
+        <collection-structure>
+          Folders:
+          - Authentication (login, refresh)
+          - Shifts (CRUD, list with filters)
+          - Assignments (create, confirm, unassign)
+          - Reports (employee, overtime)
+          - Notifications (list, read)
+          - Departments, Holidays
+        </collection-structure>
+        <pre-request-script>
+          If no token:
+            pm.sendRequest(login_request)
+            pm.environment.set("jwt_token", response.data.token)
+        </pre-request-script>
+        <acceptance-criteria>
+          - VardiyaPro.postman_collection.json in repo root
+          - All 30 endpoints documented with examples
+          - Newman run passes: newman run VardiyaPro.postman_collection.json
+        </acceptance-criteria>
+        <dependencies>Phase 3 complete</dependencies>
+      </task>
+
+      <task id="4.3" priority="medium" estimate="1h">
+        <title>Update README.md</title>
+        <description>
+          Comprehensive README with setup instructions, API overview, troubleshooting.
+        </description>
+        <sections>
+          - Project Overview (tech stack, features)
+          - Prerequisites (Ruby 3.3.9, PostgreSQL 15, Bundler)
+          - Installation Steps
+            1. Clone repo
+            2. Copy .env.example to .env
+            3. bundle install
+            4. rails db:create db:migrate db:seed
+            5. rails server
+          - API Documentation (link to Postman collection)
+          - Testing (rspec, newman)
+          - Deployment (Heroku/Render instructions)
+          - Troubleshooting (common issues, pg gem, JWT errors)
+        </sections>
+        <acceptance-criteria>
+          - README.md complete and accurate
+          - Fresh developer can setup project following README
+        </acceptance-criteria>
+        <dependencies>All previous tasks</dependencies>
+      </task>
+
+      <task id="4.4" priority="medium" estimate="30min">
+        <title>Security Audit</title>
+        <description>
+          Run Brakeman (security scanner), Bundler Audit (vulnerability check).
+          Fix any HIGH/CRITICAL issues.
+        </description>
+        <commands>
+          Add to Gemfile (development): brakeman, bundler-audit
+          bundle install
+          brakeman --run
+          bundle audit check --update
+        </commands>
+        <acceptance-criteria>
+          - Brakeman: no HIGH/CRITICAL warnings
+          - Bundler Audit: no vulnerable gems
+          - If issues found: fix or document as accepted risk
+        </acceptance-criteria>
+        <dependencies>Task 4.1</dependencies>
+      </task>
+
+      <task id="4.5" priority="high" estimate="30min">
+        <title>Production Configuration Check</title>
+        <description>
+          Verify production settings: force_ssl, secret_key_base, database config.
+          Create Procfile for Heroku deployment.
+        </description>
+        <checklist>
+          - config/environments/production.rb: force_ssl = true
+          - config/database.yml: production uses ENV variables
+          - config/initializers/jwt.rb: raises error if JWT_SECRET missing in prod
+          - config/initializers/cors.rb: production uses ENV['FRONTEND_URL']
+          - Procfile created: web and worker processes
+        </checklist>
+        <acceptance-criteria>
+          - Production config verified
+          - Procfile exists
+          - App ready for Heroku deploy (rails assets:precompile passes if needed)
+        </acceptance-criteria>
+        <dependencies>Task 4.4</dependencies>
+      </task>
+
+      <phase-completion>
+        <test>rspec passes with ≥70% coverage</test>
+        <test>newman run VardiyaPro.postman_collection.json passes</test>
+        <test>brakeman shows no critical issues</test>
+        <test>Fresh git clone → follow README → app runs</test>
+        <test>Ready for production deployment</test>
+      </phase-completion>
+    </phase>
+
+  </tasks>
+
+  <!-- SUMMARY -->
+  <summary>
+    <total-tasks>22 tasks</total-tasks>
+    <total-estimated-time>~38 hours</total-estimated-time>
+    <phases>
+      <phase id="1" name="Foundation" tasks="6" duration="8h"/>
+      <phase id="2" name="Core MVP" tasks="6" duration="12h"/>
+      <phase id="3" name="Advanced Features" tasks="5" duration="10h"/>
+      <phase id="4" name="Testing & Production" tasks="5" duration="8h"/>
+    </phases>
+
+    <critical-path>
+      Task 1.1 → 1.2 → 1.3 → 1.4 → 2.2 → 2.3 → 2.4 → 2.5 → (parallel: 3.x) → 4.1 → 4.2 → 4.5
+    </critical-path>
+
+    <milestones>
+      <milestone phase="1" achievement="JWT Auth Working" eta="Day 1"/>
+      <milestone phase="2" achievement="Shift Management + Assignment MVP" eta="Day 2-3"/>
+      <milestone phase="3" achievement="Reports + Notifications" eta="Day 4"/>
+      <milestone phase="4" achievement="Production Ready" eta="Day 5"/>
+    </milestones>
+
+    <next-step>
+      Consistency Check: Validate these tasks against Constitution, Specification, Technical Plan.
+      Ensure no contradictions, missing features, or constitutional violations.
+    </next-step>
+  </summary>
+
+</poml>
