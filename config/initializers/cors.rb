@@ -12,7 +12,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     resource '/api/*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true,
+      credentials: Rails.env.production?,  # Only allow credentials in production with specific origin
       max_age: 86400
   end
 end
