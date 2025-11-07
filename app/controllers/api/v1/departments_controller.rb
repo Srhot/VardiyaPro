@@ -6,6 +6,10 @@ module Api
       # GET /api/v1/departments
       def index
         departments = Department.active.order(:name)
+
+        # Search
+        departments = departments.search(params[:q]) if params[:q].present?
+
         render json: {
           data: departments.map { |dept| department_response(dept) }
         }, status: :ok

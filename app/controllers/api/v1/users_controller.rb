@@ -13,6 +13,9 @@ module Api
         authorize User
         users = policy_scope(User).active.order(:name)
 
+        # Search
+        users = users.search(params[:q]) if params[:q].present?
+
         # Optional filters
         users = users.by_role(params[:role]) if params[:role].present?
         users = users.in_department(params[:department_id]) if params[:department_id].present?

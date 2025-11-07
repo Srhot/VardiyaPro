@@ -27,6 +27,12 @@ module Api
       def user_not_authorized
         render json: { errors: ['You are not authorized to perform this action'] }, status: :forbidden
       end
+
+      # Set current user and request for audit logging
+      def set_audit_context(record)
+        record.current_user_for_audit = current_user if record.respond_to?(:current_user_for_audit=)
+        record.current_request_for_audit = request if record.respond_to?(:current_request_for_audit=)
+      end
     end
   end
 end

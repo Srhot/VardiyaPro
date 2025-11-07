@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include Auditable
+
   # Associations
   belongs_to :department, optional: true
   has_many :assignments, foreign_key: 'employee_id', dependent: :destroy
@@ -19,6 +21,10 @@ class User < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :by_role, ->(role) { where(role: role) }
   scope :in_department, ->(department_id) { where(department_id: department_id) }
+  scope :search, ->(query) {
+    return all if query.blank?
+    where('LOWER(name) LIKE ? OR LOWER(email) LIKE ?', "%#{query.downcase}%", "%#{query.downcase}%")
+  }
 
   # Callbacks
   before_save :downcase_email

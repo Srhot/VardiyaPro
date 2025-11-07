@@ -1,4 +1,6 @@
 class Assignment < ApplicationRecord
+  include Auditable
+
   # Associations
   belongs_to :shift
   belongs_to :employee, class_name: 'User', foreign_key: 'employee_id'

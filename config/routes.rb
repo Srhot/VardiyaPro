@@ -40,13 +40,19 @@ Rails.application.routes.draw do
           patch :mark_as_read
         end
       end
-      # resources :reports, only: [] do
-      #   collection do
-      #     get 'employee/:id', to: 'reports#employee'
-      #     get 'department/:id', to: 'reports#department'
-      #     get 'overtime', to: 'reports#overtime'
-      #   end
-      # end
+
+      # Reports
+      get 'reports/employee/:id', to: 'reports#employee'
+      get 'reports/department/:id', to: 'reports#department'
+      get 'reports/overtime', to: 'reports#overtime'
+      get 'reports/summary', to: 'reports#summary'
+
+      # Audit Logs (admin only)
+      resources :audit_logs, only: [:index, :show] do
+        collection do
+          get :for_record
+        end
+      end
     end
   end
 end

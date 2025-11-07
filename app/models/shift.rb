@@ -1,4 +1,6 @@
 class Shift < ApplicationRecord
+  include Auditable
+
   # Associations
   belongs_to :department
   has_many :assignments, dependent: :destroy
@@ -23,6 +25,17 @@ class Shift < ApplicationRecord
   scope :by_type, ->(type) { where(shift_type: type) }
   scope :upcoming, -> { where('start_time >= ?', Time.current).order(:start_time) }
   scope :in_range, ->(start_date, end_date) { where('start_time >= ? AND end_time <= ?', start_date, end_date) }
+  scope :on_date, ->(date) { where('DATE(start_time) = ?', date) }
+  scope :with_available_slots, -> {
+    joins('LEFT JOIN assignments ON assignments.shift_id = shifts.id AND assignments.status = \'confirmed\'')
+      .group('shifts.id')
+      .having('COUNT(assignments.id) < shifts.required_staff')
+  }
+  scope :search, ->(query) {
+    return all if query.blank?
+    joins(:department).where('LOWER(departments.name) LIKE ? OR LOWER(shifts.description) LIKE ?',
+                             "%#{query.downcase}%", "%#{query.downcase}%")
+  }
 
   # Callbacks
   after_update :notify_shift_updated, if: :saved_changes?

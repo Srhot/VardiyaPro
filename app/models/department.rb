@@ -8,6 +8,10 @@ class Department < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(active: true) }
+  scope :search, ->(query) {
+    return all if query.blank?
+    where('LOWER(name) LIKE ? OR LOWER(description) LIKE ?', "%#{query.downcase}%", "%#{query.downcase}%")
+  }
 
   # Callbacks
   before_save :titleize_name

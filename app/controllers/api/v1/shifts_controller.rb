@@ -7,9 +7,14 @@ module Api
       def index
         shifts = Shift.includes(:department).active
 
+        # Search
+        shifts = shifts.search(params[:q]) if params[:q].present?
+
         # Filtering
         shifts = shifts.by_department(params[:department_id]) if params[:department_id].present?
         shifts = shifts.by_type(params[:shift_type]) if params[:shift_type].present?
+        shifts = shifts.on_date(params[:date]) if params[:date].present?
+        shifts = shifts.with_available_slots if params[:available] == 'true'
 
         if params[:start_date].present? && params[:end_date].present?
           shifts = shifts.in_range(params[:start_date], params[:end_date])
