@@ -22,7 +22,15 @@ Rails.application.routes.draw do
           patch :cancel
         end
       end
-      # resources :users
+
+      resources :users do
+        member do
+          post :activate
+          post :deactivate
+          patch :update_password
+        end
+      end
+
       # resources :notifications
       # resources :reports, only: [] do
       #   collection do
