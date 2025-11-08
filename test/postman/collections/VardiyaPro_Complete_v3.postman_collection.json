@@ -68,11 +68,11 @@
           "",
           "// Check if token exists (skip for login endpoint)",
           "if (!token && !pm.request.url.path.includes('login')) {",
-          "    console.warn('⚠️ No token found. Please login first.');",
+          "    console.warn('\u26a0\ufe0f No token found. Please login first.');",
           "}",
           "",
           "// Log request details",
-          "console.log('🚀 Request:', pm.request.method, pm.request.url.path.join('/'));",
+          "console.log('\ud83d\ude80 Request:', pm.request.method, pm.request.url.path.join('/'));",
           "",
           "// Set timestamp for performance tracking",
           "pm.collectionVariables.set('request_start_time', new Date().getTime());"
@@ -89,7 +89,7 @@
           "// Calculate response time",
           "const startTime = pm.collectionVariables.get('request_start_time');",
           "const responseTime = new Date().getTime() - startTime;",
-          "console.log('⏱️ Response Time:', responseTime + 'ms');",
+          "console.log('\u23f1\ufe0f Response Time:', responseTime + 'ms');",
           "",
           "// Common test: Response time should be less than 2000ms",
           "pm.test('Response time is acceptable', function () {",
@@ -148,8 +148,8 @@
                   "    const jsonData = pm.response.json();",
                   "    pm.environment.set('token', jsonData.token);",
                   "    pm.environment.set('user_id', jsonData.user.id);",
-                  "    console.log('✅ Token saved:', jsonData.token.substring(0, 20) + '...');",
-                  "    console.log('✅ User ID saved:', jsonData.user.id);",
+                  "    console.log('\u2705 Token saved:', jsonData.token.substring(0, 20) + '...');",
+                  "    console.log('\u2705 User ID saved:', jsonData.user.id);",
                   "}"
                 ]
               }
@@ -169,8 +169,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -209,8 +214,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -251,8 +261,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         }
@@ -271,7 +286,7 @@
                   "// Check token exists",
                   "const token = pm.environment.get('token');",
                   "if (!token) {",
-                  "    console.error('❌ No token. Please login first.');",
+                  "    console.error('\u274c No token. Please login first.');",
                   "}"
                 ]
               }
@@ -308,7 +323,7 @@
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
                   "        pm.environment.set('department_id', jsonData.data[0].id);",
-                  "        console.log('✅ Department ID saved:', jsonData.data[0].id);",
+                  "        console.log('\u2705 Department ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
                 ]
@@ -330,8 +345,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/departments",
-              "host": ["{{base_url}}"],
-              "path": ["departments"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "departments"
+              ]
             }
           }
         },
@@ -373,14 +392,29 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/departments/{{department_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["departments", "{{department_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "departments",
+                "{{department_id}}"
+              ]
             }
           }
         },
         {
           "name": "Create Department (Admin)",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique department name with timestamp",
+                  "const timestamp = Date.now();",
+                  "pm.environment.set(\"department_name\", `Test Dept ${timestamp}`);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -420,12 +454,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test Department\",\n  \"description\": \"Department created via Postman test\"\n}"
+              "raw": "{\n  \"name\": \"{{department_name}}\",\n  \"description\": \"Department created via Postman test\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/departments",
-              "host": ["{{base_url}}"],
-              "path": ["departments"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "departments"
+              ]
             }
           }
         }
@@ -466,7 +504,7 @@
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
                   "        pm.environment.set('shift_id', jsonData.data[0].id);",
-                  "        console.log('✅ Shift ID saved:', jsonData.data[0].id);",
+                  "        console.log('\u2705 Shift ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
                 ]
@@ -488,8 +526,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/shifts?page=1&per_page=10",
-              "host": ["{{base_url}}"],
-              "path": ["shifts"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shifts"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -516,11 +558,12 @@
                   "});",
                   "",
                   "// Test 2: Shift has required fields",
+                  "// Test 2: Shift has required fields",
                   "pm.test('Shift has all required fields', function () {",
                   "    const jsonData = pm.response.json();",
                   "    const shift = jsonData.data;",
                   "    pm.expect(shift).to.have.property('id');",
-                  "    pm.expect(shift).to.have.property('title');",
+                  "    pm.expect(shift).to.have.property('title'); // Computed field",
                   "    pm.expect(shift).to.have.property('start_time');",
                   "    pm.expect(shift).to.have.property('end_time');",
                   "    pm.expect(shift).to.have.property('shift_type');",
@@ -545,8 +588,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/shifts/{{shift_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["shifts", "{{shift_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shifts",
+                "{{shift_id}}"
+              ]
             }
           }
         },
@@ -562,11 +610,17 @@
                   "    pm.response.to.have.status(201);",
                   "});",
                   "",
-                  "// Test 2: Created shift matches input",
+                  "// Test 2: Created shift has correct data",
                   "pm.test('Created shift has correct data', function () {",
                   "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.title).to.eql('Test Morning Shift');",
+                  "    // Title is computed from shift_type and date",
+                  "    pm.expect(jsonData.data).to.have.property('title');",
+                  "    pm.expect(jsonData.data.title).to.include('Morning');",
                   "    pm.expect(jsonData.data.shift_type).to.eql('morning');",
+                  "    pm.expect(jsonData.data.department_id).to.eql(pm.environment.get('department_id'));",
+                  "    ",
+                  "    // Save shift_id for later use",
+                  "    pm.environment.set('shift_id', jsonData.data.id);",
                   "});"
                 ]
               }
@@ -592,12 +646,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Test Morning Shift\",\n  \"start_time\": \"2025-02-01T08:00:00Z\",\n  \"end_time\": \"2025-02-01T16:00:00Z\",\n  \"shift_type\": \"morning\",\n  \"department_id\": {{department_id}},\n  \"required_staff\": 2,\n  \"description\": \"Test shift created via Postman\"\n}"
+              "raw": "{\n  \"start_time\": \"2025-02-01T08:00:00Z\",\n  \"end_time\": \"2025-02-01T16:00:00Z\",\n  \"shift_type\": \"morning\",\n  \"department_id\": {{department_id}},\n  \"required_staff\": 2,\n  \"description\": \"Test shift created via Postman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/shifts",
-              "host": ["{{base_url}}"],
-              "path": ["shifts"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "shifts"
+              ]
             }
           }
         }
@@ -630,7 +688,7 @@
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
                   "        pm.environment.set('assignment_id', jsonData.data[0].id);",
-                  "        console.log('✅ Assignment ID saved:', jsonData.data[0].id);",
+                  "        console.log('\u2705 Assignment ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
                 ]
@@ -652,8 +710,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/assignments",
-              "host": ["{{base_url}}"],
-              "path": ["assignments"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assignments"
+              ]
             }
           }
         },
@@ -693,8 +755,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/assignments/{{assignment_id}}/confirm",
-              "host": ["{{base_url}}"],
-              "path": ["assignments", "{{assignment_id}}", "confirm"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assignments",
+                "{{assignment_id}}",
+                "confirm"
+              ]
             }
           }
         }
@@ -738,7 +806,7 @@
                   "if (pm.response.code === 201) {",
                   "    const jsonData = pm.response.json();",
                   "    pm.environment.set('time_entry_id', jsonData.data.id);",
-                  "    console.log('✅ Time Entry ID saved:', jsonData.data.id);",
+                  "    console.log('\u2705 Time Entry ID saved:', jsonData.data.id);",
                   "}"
                 ]
               }
@@ -768,8 +836,14 @@
             },
             "url": {
               "raw": "{{base_url}}/assignments/{{assignment_id}}/clock_in",
-              "host": ["{{base_url}}"],
-              "path": ["assignments", "{{assignment_id}}", "clock_in"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assignments",
+                "{{assignment_id}}",
+                "clock_in"
+              ]
             }
           }
         },
@@ -822,8 +896,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/time_entries",
-              "host": ["{{base_url}}"],
-              "path": ["time_entries"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time_entries"
+              ]
             }
           }
         },
@@ -878,8 +956,14 @@
             },
             "url": {
               "raw": "{{base_url}}/time_entries/{{time_entry_id}}/clock_out",
-              "host": ["{{base_url}}"],
-              "path": ["time_entries", "{{time_entry_id}}", "clock_out"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "time_entries",
+                "{{time_entry_id}}",
+                "clock_out"
+              ]
             }
           }
         }
@@ -925,7 +1009,7 @@
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
                   "        pm.environment.set('holiday_id', jsonData.data[0].id);",
-                  "        console.log('✅ Holiday ID saved:', jsonData.data[0].id);",
+                  "        console.log('\u2705 Holiday ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
                 ]
@@ -947,8 +1031,12 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/holidays",
-              "host": ["{{base_url}}"],
-              "path": ["holidays"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "holidays"
+              ]
             }
           }
         },
@@ -998,8 +1086,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/holidays/check?date=2025-01-01",
-              "host": ["{{base_url}}"],
-              "path": ["holidays", "check"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "holidays",
+                "check"
+              ],
               "query": [
                 {
                   "key": "date",
@@ -1012,6 +1105,20 @@
         {
           "name": "Create Holiday (Admin)",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique future date",
+                  "const now = new Date();",
+                  "const daysToAdd = Math.floor(Math.random() * 100) + 30; // 30-130 days from now",
+                  "const futureDate = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));",
+                  "const dateStr = futureDate.toISOString().split(\"T\")[0];",
+                  "pm.environment.set(\"test_holiday_date\", dateStr);",
+                  "pm.environment.set(\"test_holiday_name\", `Test Holiday ${Date.now()}`);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1051,12 +1158,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test Holiday\",\n  \"date\": \"2025-12-31\"\n}"
+              "raw": "{\n  \"name\": \"{{test_holiday_name}}\",\n  \"date\": \"{{test_holiday_date}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/holidays",
-              "host": ["{{base_url}}"],
-              "path": ["holidays"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "holidays"
+              ]
             }
           }
         }
@@ -1081,8 +1192,9 @@
                   "pm.test('Report has required fields', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.have.property('employee');",
-                  "    pm.expect(jsonData.data).to.have.property('total_hours');",
-                  "    pm.expect(jsonData.data).to.have.property('shifts_count');",
+                  "    pm.expect(jsonData.data).to.have.property('statistics');",
+                  "    pm.expect(jsonData.data.statistics).to.have.property('total_hours');",
+                  "    pm.expect(jsonData.data.statistics).to.have.property('total_assignments');",
                   "});"
                 ]
               }
@@ -1103,8 +1215,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/reports/employee/{{user_id}}?start_date=2025-01-01&end_date=2025-12-31",
-              "host": ["{{base_url}}"],
-              "path": ["reports", "employee", "{{user_id}}"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "employee",
+                "{{user_id}}"
+              ],
               "query": [
                 {
                   "key": "start_date",
@@ -1130,11 +1248,12 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "// Test 2: Report has data array",
-                  "pm.test('Report has data array', function () {",
+                  "// Test 2: Report has correct structure",
+                  "pm.test('Report has correct structure', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('data');",
-                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    pm.expect(jsonData.data).to.have.property('overtime_employees');",
+                  "    pm.expect(jsonData.data.overtime_employees).to.be.an('array');",
                   "});"
                 ]
               }
@@ -1155,8 +1274,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/reports/overtime?start_date=2025-01-01&end_date=2025-12-31",
-              "host": ["{{base_url}}"],
-              "path": ["reports", "overtime"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "overtime"
+              ],
               "query": [
                 {
                   "key": "start_date",

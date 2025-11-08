@@ -60,7 +60,7 @@ module Api
       private
 
       def department_params
-        params.require(:department).permit(:name, :description, :active)
+        params.permit(:name, :description, :active)
       end
 
       def department_response(dept)

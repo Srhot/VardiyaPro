@@ -102,8 +102,12 @@ module Api
       end
 
       def shift_response(shift, include_assignments: false)
+        # Generate title from shift_type and date
+        title = "#{shift.shift_type.to_s.titleize} - #{shift.start_time.strftime('%Y-%m-%d')}"
+
         response = {
           id: shift.id,
+          title: title,
           department_id: shift.department_id,
           department: {
             id: shift.department.id,

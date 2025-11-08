@@ -146,6 +146,34 @@ module Api
         end
       end
 
+      # POST /api/v1/assignments/:id/clock_in
+      # Clock in for an assignment
+      def clock_in
+        assignment = Assignment.find(params[:id])
+
+        # Authorization check
+        return unauthorized_employee unless current_user.id == assignment.employee_id || can_manage_assignments?
+
+        if assignment.time_entry.present?
+          return render json: { errors: ['Time entry already exists for this assignment'] }, status: :unprocessable_entity
+        end
+
+        if assignment.status != 'confirmed'
+          return render json: { errors: ['Assignment must be confirmed before clocking in'] }, status: :unprocessable_entity
+        end
+
+        time_entry = assignment.build_time_entry(
+          clock_in_time: Time.current,
+          notes: params[:notes]
+        )
+
+        if time_entry.save
+          render json: { data: time_entry_response(time_entry) }, status: :created
+        else
+          render json: { errors: time_entry.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def assignment_params
@@ -208,6 +236,34 @@ module Api
 
       def unauthorized
         render json: { errors: ['Admin, HR, or Manager access required'] }, status: :forbidden
+      end
+
+      def unauthorized_employee
+        render json: { errors: ['You can only clock in for your own assignments'] }, status: :forbidden
+      end
+
+      def time_entry_response(time_entry)
+        {
+          id: time_entry.id,
+          assignment_id: time_entry.assignment_id,
+          clock_in_time: time_entry.clock_in_time,
+          clock_out_time: time_entry.clock_out_time,
+          worked_hours: time_entry.worked_hours,
+          notes: time_entry.notes,
+          employee: {
+            id: time_entry.assignment.employee.id,
+            name: time_entry.assignment.employee.name,
+            email: time_entry.assignment.employee.email
+          },
+          shift: {
+            id: time_entry.assignment.shift.id,
+            shift_type: time_entry.assignment.shift.shift_type,
+            start_time: time_entry.assignment.shift.start_time,
+            end_time: time_entry.assignment.shift.end_time
+          },
+          created_at: time_entry.created_at,
+          updated_at: time_entry.updated_at
+        }
       end
     end
   end
