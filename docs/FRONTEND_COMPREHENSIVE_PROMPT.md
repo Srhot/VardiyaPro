@@ -33,7 +33,23 @@ Create a modern, responsive frontend application for "VardiyaPro" - a comprehens
 
 ## API ENDPOINTS (Backend Ready)
 
-Base URL: http://localhost:3000/api/v1
+**API Versioning Strategy:** VardiyaPro uses URL-based API versioning
+
+Base URL:
+- **v1 (Stable):** http://localhost:3000/api/v1
+- **v2 (Beta):** http://localhost:3000/api/v2
+
+**Version Selection:** Default to v1 (stable) in production. v2 can be toggled in developer settings.
+
+**Semantic Versioning:**
+- Current: v1.1.0 (Time Entry & Holiday features)
+- Next: v1.2.0 (Minor updates, backward compatible)
+- Future: v2.0.0 (Breaking changes, new architecture)
+
+**Deprecation Handling:**
+- Display deprecation warnings from API headers
+- Show migration guides when API version is deprecated
+- Automatic version upgrade prompts
 
 ### Authentication
 - POST /auth/login - { email, password } → { token, user }
@@ -349,38 +365,165 @@ Use React Context or Zustand for:
 - Current user role
 - Notifications count
 - Theme preferences
+- **API version state** (v1 or v2)
+- **API deprecation warnings** (show banner or not)
+- **API health status** (connected, disconnected, version mismatch)
 
 ## API INTEGRATION
 
 ```javascript
-// Example API calls with axios
+// API Client with Version Management
+
+// Get current API version (from localStorage or default to v1)
+const getApiVersion = () => {
+  return localStorage.getItem('api_version') || 'v1';
+};
+
+// Get base URL based on version
+const getBaseUrl = () => {
+  const version = getApiVersion();
+  return `http://localhost:3000/api/${version}`;
+};
+
+// Axios instance with version management
+const apiClient = axios.create({
+  baseURL: getBaseUrl(),
+  timeout: 10000
+});
+
+// Add auth token to all requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle deprecation warnings
+apiClient.interceptors.response.use(
+  (response) => {
+    // Check for deprecation header
+    if (response.headers['deprecation'] === 'true') {
+      const sunsetDate = response.headers['sunset'];
+      const successorVersion = response.headers['link'];
+
+      // Store deprecation warning
+      localStorage.setItem('api_deprecation_warning', JSON.stringify({
+        message: `API ${getApiVersion()} will be deprecated on ${sunsetDate}`,
+        sunsetDate,
+        successorVersion,
+        timestamp: Date.now()
+      }));
+
+      // Trigger warning banner
+      window.dispatchEvent(new Event('api-deprecation-detected'));
+    }
+
+    return response;
+  },
+  (error) => {
+    // Handle errors
+    if (error.response?.status === 410) {
+      // 410 Gone - API version no longer supported
+      alert('This API version is no longer supported. Please update the app.');
+      // Force redirect to migration page
+      window.location.href = '/migration';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Example API calls with version-aware client
 
 // Login
 const login = async (email, password) => {
-  const response = await axios.post('/api/v1/auth/login', { email, password });
+  const response = await apiClient.post('/auth/login', { email, password });
   localStorage.setItem('token', response.data.token);
   return response.data;
 };
 
-// Get Shifts (with auth)
+// Get Shifts (with auth and version handling)
 const getShifts = async (params) => {
-  const token = localStorage.getItem('token');
-  const response = await axios.get('/api/v1/shifts', {
-    headers: { Authorization: `Bearer ${token}` },
-    params
-  });
+  const response = await apiClient.get('/shifts', { params });
   return response.data;
 };
 
-// Clock In
+// Clock In (version-aware)
 const clockIn = async (assignmentId, notes) => {
-  const token = localStorage.getItem('token');
-  const response = await axios.post(
-    `/api/v1/assignments/${assignmentId}/clock_in`,
-    { notes },
-    { headers: { Authorization: `Bearer ${token}` } }
+  const response = await apiClient.post(
+    `/assignments/${assignmentId}/clock_in`,
+    { notes }
   );
   return response.data;
+};
+
+// Switch API version (developer feature)
+const switchApiVersion = (version) => {
+  localStorage.setItem('api_version', version);
+  apiClient.defaults.baseURL = getBaseUrl();
+
+  // Show confirmation
+  console.log(`✅ Switched to API ${version}`);
+
+  // Reload app to apply new version
+  window.location.reload();
+};
+
+// Check API health and version
+const checkApiHealth = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/up');
+    const apiVersion = response.headers['x-api-version'] || 'unknown';
+    const expectedVersion = getApiVersion();
+
+    return {
+      healthy: true,
+      version: apiVersion,
+      mismatch: apiVersion !== expectedVersion
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error.message
+    };
+  }
+};
+```
+
+### Version-Specific API Calls
+
+```javascript
+// Handle v1 vs v2 differences
+
+// Get User (v1)
+const getUserV1 = async (id) => {
+  const response = await apiClient.get(`/users/${id}`);
+  // v1 structure: { data: { id, name, email, role } }
+  return response.data.data;
+};
+
+// Get User (v2 - enhanced profile)
+const getUserV2 = async (id) => {
+  const response = await apiClient.get(`/users/${id}/profile`);
+  // v2 structure: { data: { id, profile: {...}, statistics: {...} } }
+  return {
+    ...response.data.data,
+    // Normalize for backward compatibility
+    name: response.data.data.profile.name,
+    email: response.data.data.profile.email
+  };
+};
+
+// Smart wrapper that handles both versions
+const getUser = async (id) => {
+  const version = getApiVersion();
+
+  if (version === 'v1') {
+    return getUserV1(id);
+  } else if (version === 'v2') {
+    return getUserV2(id);
+  }
 };
 ```
 
@@ -441,12 +584,144 @@ Employee:
 
 ## ADDITIONAL FEATURES
 
+### Core Features
+
 1. **Dark Mode Toggle** (optional)
 2. **Language Switcher** (TR/EN) - optional
 3. **Real-time Notifications** (WebSocket) - future enhancement
 4. **Offline Mode** (PWA) - future enhancement
 5. **Export to PDF** for reports
 6. **Email Notifications** (backend handles this)
+
+### API Versioning Features (IMPORTANT - Based on Semantic Versioning Strategy)
+
+7. **API Version Indicator**
+   - Display current API version in footer or settings
+   - Show version badge: "Using API v1.1.0"
+   - Color code: Green (stable), Yellow (deprecated), Red (unsupported)
+
+8. **Deprecation Warning Banner**
+   - Detect `Deprecation: true` header from API responses
+   - Show prominent banner at top: "This API version will be deprecated on [date]. Please upgrade."
+   - Link to migration guide
+   - Allow "Dismiss for 7 days" option
+
+   ```jsx
+   // Example Deprecation Banner Component
+   {apiDeprecationWarning && (
+     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+       <div className="flex">
+         <div className="flex-shrink-0">
+           <ExclamationIcon className="h-5 w-5 text-yellow-400" />
+         </div>
+         <div className="ml-3">
+           <p className="text-sm text-yellow-700">
+             API v1 will be deprecated on <strong>{deprecationDate}</strong>.
+             <a href="/migration-guide" className="font-medium underline">
+               View migration guide
+             </a>
+           </p>
+         </div>
+       </div>
+     </div>
+   )}
+   ```
+
+9. **Version Selector (Developer Mode)**
+   - Settings → Developer Options → API Version
+   - Dropdown: v1 (Stable), v2 (Beta)
+   - Warning when selecting beta: "v2 is in beta. Features may change."
+   - Persist selection in localStorage
+
+   ```jsx
+   // Example Version Selector
+   <select
+     value={apiVersion}
+     onChange={(e) => setApiVersion(e.target.value)}
+     className="form-select"
+   >
+     <option value="v1">v1.1.0 (Stable) ✅</option>
+     <option value="v2">v2.0.0 (Beta) 🔬</option>
+   </select>
+   ```
+
+10. **Backward Compatibility Layer**
+    - Handle different response structures between v1 and v2
+    - Normalize responses internally
+    - Example: v1 returns `{data: {}}`, v2 might return different format
+
+    ```javascript
+    // API response normalizer
+    function normalizeUserResponse(response, version) {
+      if (version === 'v1') {
+        return {
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.email,
+          role: response.data.role
+        };
+      } else if (version === 'v2') {
+        return {
+          id: response.data.id,
+          name: response.data.profile.name,  // Different structure
+          email: response.data.profile.email,
+          role: response.data.role,
+          avatar: response.data.profile.avatar_url  // New field
+        };
+      }
+    }
+    ```
+
+11. **Migration Checklist Page** (Admin only)
+    - Show when v2 is available
+    - Checklist of breaking changes
+    - Test v2 endpoints button
+    - Switch to v2 button (with confirmation)
+
+    ```
+    Migration Checklist (v1 → v2)
+    ☐ Test new authentication flow
+    ☐ Update user profile handling
+    ☐ Verify reports work correctly
+    ☐ Check mobile app compatibility
+    ☑ All critical endpoints tested
+
+    [Switch to v2] [Test v2 Endpoints]
+    ```
+
+12. **Version Changelog Modal**
+    - Show what's new in each version
+    - Accessible from version indicator
+    - Format: MAJOR.MINOR.PATCH with descriptions
+
+    ```
+    What's New in v1.2.0
+
+    Added:
+    ✨ phone_verified field in user profiles
+    ✨ Enhanced department metrics
+
+    Changed:
+    🔄 Improved time entry validation
+
+    Fixed:
+    🐛 Assignment overlap validation
+    ```
+
+13. **API Health Check**
+    - Periodic ping to `/up` endpoint
+    - Show connection status indicator
+    - Alert user if API is down or version mismatch
+
+    ```jsx
+    <div className="api-status">
+      {apiHealthy ? (
+        <span className="text-green-600">● API Connected (v{apiVersion})</span>
+      ) : (
+        <span className="text-red-600">● API Disconnected</span>
+      )}
+    </div>
+    ```
 
 ## DELIVERABLES
 
