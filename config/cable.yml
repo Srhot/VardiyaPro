@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+# Action Cable configuration
+development:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+      reading: cable
+
+test:
+  adapter: test
+
+production:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+      reading: cable
