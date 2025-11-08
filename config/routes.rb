@@ -54,5 +54,33 @@ Rails.application.routes.draw do
         end
       end
     end
+
+    # API v2 namespace (New version with additional features)
+    namespace :v2 do
+      # Authentication (same as v1)
+      post 'auth/login', to: 'auth#login'
+
+      # Users (enhanced with additional fields)
+      resources :users, only: [:index, :show, :create, :update] do
+        member do
+          get :profile  # NEW: Enhanced profile with more details
+          get :statistics  # NEW: User statistics
+        end
+      end
+
+      # Departments (enhanced with team metrics)
+      resources :departments, only: [:index, :show, :create, :update] do
+        member do
+          get :team_metrics  # NEW: Team performance metrics
+        end
+      end
+
+      # Shifts (enhanced with capacity planning)
+      resources :shifts do
+        collection do
+          get :capacity_report  # NEW: Capacity planning report
+        end
+      end
+    end
   end
 end

@@ -1,0 +1,28 @@
+{
+  "name": "vardiyapro",
+  "version": "1.0.0",
+  "description": "VardiyaPro - Shift Management System API Testing",
+  "scripts": {
+    "test:api": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json",
+    "test:api:html": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r html --reporter-html-export postman/reports/test-report.html",
+    "test:api:json": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r json --reporter-json-export postman/reports/test-report.json",
+    "test:api:all": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r html,json,cli --reporter-html-export postman/reports/test-report.html --reporter-json-export postman/reports/test-report.json",
+    "test:api:verbose": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json --verbose",
+    "test:watch": "nodemon --exec npm run test:api"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "postman",
+    "newman",
+    "shift-management"
+  ],
+  "author": "VardiyaPro Team",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.1.1",
+    "newman-reporter-html": "^1.0.5",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "nodemon": "^3.0.2"
+  }
+}
