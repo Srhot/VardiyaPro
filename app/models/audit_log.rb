@@ -27,7 +27,7 @@ class AuditLog < ApplicationRecord
       auditable_type: auditable.class.name,
       auditable_id: auditable.id,
       action: action,
-      changes: changes,
+      audit_changes: changes,  # Renamed from 'changes' to 'audit_changes' to avoid ActiveRecord conflict
       ip_address: request&.remote_ip,
       user_agent: request&.user_agent
     )

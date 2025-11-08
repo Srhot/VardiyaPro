@@ -13,8 +13,8 @@ class CreateAuditLogs < ActiveRecord::Migration[8.0]
       # Action type: create, update, delete
       t.string :action, null: false
 
-      # Changes made (JSON)
-      t.jsonb :changes, default: {}
+      # Changes made (JSON) - renamed from 'changes' to avoid ActiveRecord conflict
+      t.jsonb :audit_changes, default: {}
 
       # Additional context
       t.string :ip_address
