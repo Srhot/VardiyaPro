@@ -216,6 +216,30 @@ puts "     • Pending: #{Assignment.pending.count}"
 puts "     • Confirmed: #{Assignment.confirmed.count}"
 
 puts ''
+
+# Create Holidays
+puts '📅 Creating holidays...'
+
+holidays_data = [
+  { name: "New Year's Day", date: Date.new(Date.current.year, 1, 1) },
+  { name: 'National Sovereignty Day', date: Date.new(Date.current.year, 4, 23) },
+  { name: 'Labor Day', date: Date.new(Date.current.year, 5, 1) },
+  { name: 'Youth and Sports Day', date: Date.new(Date.current.year, 5, 19) },
+  { name: 'Victory Day', date: Date.new(Date.current.year, 8, 30) },
+  { name: 'Republic Day', date: Date.new(Date.current.year, 10, 29) }
+]
+
+holidays_created = holidays_data.map do |holiday_attrs|
+  holiday = Holiday.find_or_create_by!(date: holiday_attrs[:date]) do |h|
+    h.name = holiday_attrs[:name]
+  end
+  puts "   ✓ #{holiday.name} (#{holiday.date})"
+  holiday
+end
+
+puts "   ✓ Created #{holidays_created.count} holidays"
+
+puts ''
 puts '✅ Seeding completed successfully!'
 puts ''
 puts '📊 Summary:'
@@ -230,6 +254,7 @@ puts "     • By type: Morning (#{Shift.by_type('morning').count}), Evening (#{
 puts "   - Assignments: #{Assignment.count}"
 puts "     • Confirmed: #{Assignment.confirmed.count}"
 puts "     • Pending: #{Assignment.pending.count}"
+puts "   - Holidays: #{Holiday.count}"
 puts ''
 puts '🔐 Test Credentials:'
 puts '   Admin:    admin@vardiyapro.com / password123'

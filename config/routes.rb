@@ -22,6 +22,21 @@ Rails.application.routes.draw do
           patch :confirm
           patch :complete
           patch :cancel
+          post :clock_in
+        end
+      end
+
+      # Time Entries (clock in/out tracking)
+      resources :time_entries, only: %i[index show update destroy] do
+        member do
+          patch :clock_out
+        end
+      end
+
+      # Holidays (system-defined holidays)
+      resources :holidays do
+        collection do
+          get :check
         end
       end
 

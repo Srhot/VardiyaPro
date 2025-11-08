@@ -6,6 +6,7 @@ class Assignment < ApplicationRecord
   # Associations
   belongs_to :shift
   belongs_to :employee, class_name: 'User', foreign_key: 'employee_id'
+  has_one :time_entry, dependent: :destroy
 
   # Constants
   STATUSES = %w[pending confirmed completed cancelled].freeze
