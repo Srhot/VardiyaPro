@@ -1,0 +1,12 @@
+.env
+tmp/
+log/
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Newman test reports
+test/postman/reports/*.html
+test/postman/reports/*.json
+!test/postman/reports/.gitkeep

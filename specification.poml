@@ -1,0 +1,1271 @@
+<poml>
+  <role>Product Specification Designer for VardiyaPro</role>
+  <task>Define WHAT the system does and WHY - Feature specifications and business requirements</task>
+
+  <document src="https://github.com/Srhot/scale-platform" type="reference">
+    Scale Platform: Rails 8 reference architecture with JWT auth, Solid Stack, Service Objects
+  </document>
+
+  <document src="constitution.poml" type="governance">
+    Project constitution establishing security, testing, architecture, and performance principles
+  </document>
+
+  <specification>
+
+    <!-- PROJECT OVERVIEW -->
+    <overview>
+      <purpose>
+        VardiyaPro is a comprehensive shift management system designed to streamline workforce scheduling,
+        assignment, tracking, and reporting for organizations with shift-based operations.
+      </purpose>
+
+      <business-value>
+        - Reduce scheduling conflicts and overlap errors by 95%
+        - Automate shift assignment and approval workflows
+        - Provide real-time visibility into workforce coverage
+        - Enable data-driven decisions through detailed analytics
+        - Improve employee satisfaction with transparent scheduling
+      </business-value>
+
+      <scope>
+        <included>
+          - Shift creation, editing, deletion with templates
+          - Employee assignment with capacity and overlap validation
+          - Calendar views (daily, weekly, monthly)
+          - Multi-role access control (Admin, Manager, Employee, HR)
+          - Notification system (email + in-app)
+          - Reporting and analytics (employee, department, time-based)
+          - Approval workflows for shift assignments and swaps
+          - Overtime tracking and management
+          - Time tracking (clock in/out)
+        </included>
+
+        <excluded>
+          - Third-party integrations (HR, Payroll, Calendar) - Phase 2
+          - SMS/Push notifications - Phase 2
+          - Native mobile apps - Phase 2
+          - Biometric device integration - Phase 3
+          - Multi-tenant architecture - Future
+        </excluded>
+      </scope>
+
+      <target-users>
+        - Small to medium businesses (10-500 employees)
+        - Industries: Retail, Healthcare, Hospitality, Manufacturing, Security
+        - Shift-based operations requiring 24/7 or multi-shift coverage
+      </target-users>
+    </overview>
+
+    <!-- FEATURES -->
+    <features>
+
+      <!-- Feature 1: Shift Management -->
+      <feature id="shift-management" priority="critical" phase="1">
+        <title>Shift Creation and Management</title>
+
+        <description>
+          Managers and admins can create, edit, and delete shifts with specific time ranges,
+          types, locations, and capacity limits. Shifts can be created from templates for
+          recurring patterns.
+        </description>
+
+        <user-stories>
+          <story id="sm-001">
+            As a Manager
+            I want to create a new shift with start/end times, type, and capacity
+            So that I can plan workforce coverage for a specific time period
+          </story>
+
+          <story id="sm-002">
+            As a Manager
+            I want to edit an existing shift's details (time, location, capacity)
+            So that I can adjust plans when requirements change
+          </story>
+
+          <story id="sm-003">
+            As a Manager
+            I want to delete a shift that is no longer needed
+            So that employees aren't assigned to cancelled shifts
+          </story>
+
+          <story id="sm-004">
+            As a Manager
+            I want to create shift templates for recurring patterns (e.g., "Morning Mon-Fri")
+            So that I can quickly create multiple shifts without repetitive data entry
+          </story>
+
+          <story id="sm-005">
+            As an Employee
+            I want to view all available open shifts
+            So that I can request to pick up extra hours
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Shift must have: title, start_time, end_time, shift_type
+          - Optional fields: location, notes, capacity (default: unlimited)
+          - Start time must be before end time
+          - Shift duration: minimum 4 hours, maximum 12 hours
+          - Shifts can span midnight (e.g., 23:00 - 07:00)
+          - Templates save: title, shift_type, duration, day_of_week pattern
+          - UI shows validation errors before save
+          - Audit trail: who created/edited, when
+        </acceptance-criteria>
+
+        <business-rules>
+          - Only Manager and Admin roles can create/edit/delete shifts
+          - Employees can view shifts but not modify
+          - Cannot delete shift with confirmed assignments (must unassign first)
+          - Editing shift time notifies all assigned employees
+        </business-rules>
+      </feature>
+
+      <!-- Feature 2: Shift Assignment -->
+      <feature id="shift-assignment" priority="critical" phase="1">
+        <title>Employee Shift Assignment</title>
+
+        <description>
+          Managers assign employees to shifts, with automatic validation for overlaps and capacity.
+          Assignments have statuses (pending, confirmed, completed) and can require approval.
+        </description>
+
+        <user-stories>
+          <story id="sa-001">
+            As a Manager
+            I want to assign an employee to a shift
+            So that I can ensure adequate staffing for that time period
+          </story>
+
+          <story id="sa-002">
+            As a System
+            I want to prevent assigning an employee to overlapping shifts
+            So that scheduling conflicts are impossible
+          </story>
+
+          <story id="sa-003">
+            As a Manager
+            I want to see shift capacity status (3/5 filled)
+            So that I know how many more employees I can assign
+          </story>
+
+          <story id="sa-004">
+            As an Employee
+            I want to confirm or decline a pending shift assignment
+            So that I can indicate my availability
+          </story>
+
+          <story id="sa-005">
+            As a Manager
+            I want to bulk assign multiple employees to recurring shifts
+            So that I can efficiently schedule a full week/month
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Assignment links: shift_id, employee_id, status
+          - Status values: pending, confirmed, declined, completed, cancelled
+          - Overlap validation: same employee cannot have overlapping shift times
+          - Capacity validation: shift cannot exceed defined capacity
+          - Notification sent to employee on assignment creation
+          - Employee can confirm/decline pending assignments
+          - Manager can cancel assignments
+          - Completed status auto-set after shift end time
+        </acceptance-criteria>
+
+        <business-rules>
+          - One employee cannot be assigned to overlapping time ranges
+          - Shift at capacity cannot accept new assignments
+          - Declining assignment frees up capacity
+          - Employees can only confirm/decline, not self-assign (unless pickup feature enabled)
+          - Managers can override capacity in emergency (with warning)
+        </business-rules>
+      </feature>
+
+      <!-- Feature 3: Calendar View -->
+      <feature id="calendar-view" priority="high" phase="1">
+        <title>Shift Calendar Visualization</title>
+
+        <description>
+          Visual calendar interface showing shifts in daily, weekly, and monthly views.
+          Color-coded by shift type, filterable by department, employee, status.
+        </description>
+
+        <user-stories>
+          <story id="cv-001">
+            As an Employee
+            I want to see my assigned shifts in a monthly calendar
+            So that I can plan my personal schedule
+          </story>
+
+          <story id="cv-002">
+            As a Manager
+            I want to see all department shifts in a weekly view
+            So that I can identify coverage gaps
+          </story>
+
+          <story id="cv-003">
+            As an Admin
+            I want to filter calendar by department, shift type, or employee
+            So that I can focus on specific scheduling aspects
+          </story>
+
+          <story id="cv-004">
+            As a User
+            I want to click on a shift in the calendar to see details
+            So that I can view assignments, notes, and other info
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Three view modes: Day, Week, Month
+          - Color coding: Morning (blue), Evening (orange), Night (purple), etc.
+          - Shift cards show: title, time range, assigned count/capacity
+          - Click shift → modal with full details and assignment list
+          - Filter options: department, shift_type, employee, date_range
+          - Responsive design: works on mobile browsers
+          - Loading state for async data fetch
+        </acceptance-criteria>
+
+        <business-rules>
+          - Employees see only their own shifts in calendar
+          - Managers see their department's shifts
+          - Admins and HR see all shifts
+          - Empty shifts (no assignments) shown with visual indicator
+          - Past shifts grayed out, future shifts highlighted
+        </business-rules>
+      </feature>
+
+      <!-- Feature 4: Reporting -->
+      <feature id="reporting" priority="high" phase="2">
+        <title>Analytics and Reporting</title>
+
+        <description>
+          Generate detailed reports on employee hours, department coverage, overtime,
+          and time analysis. Export to PDF, Excel, CSV formats.
+        </description>
+
+        <user-stories>
+          <story id="rep-001">
+            As an HR user
+            I want to generate a monthly report for an employee showing total hours and overtime
+            So that I can prepare accurate payroll data
+          </story>
+
+          <story id="rep-002">
+            As a Manager
+            I want to see a department coverage report by week
+            So that I can identify understaffed time periods
+          </story>
+
+          <story id="rep-003">
+            As an Admin
+            I want to analyze which time slots (hour of day) have most/least shifts
+            So that I can optimize staffing patterns
+          </story>
+
+          <story id="rep-004">
+            As an HR user
+            I want to export reports to Excel
+            So that I can further analyze data in spreadsheets
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Employee Report: employee_id, date_range → total hours, overtime hours, shift count
+          - Department Report: department_id, date_range → shifts, employees, coverage percentage
+          - Time Analysis: date_range → hourly distribution chart
+          - Attendance Report: planned vs actual (clock in/out times)
+          - Export formats: PDF (print-ready), Excel (.xlsx), CSV
+          - Reports cached for 1 hour (performance)
+          - Generate report async for large datasets (Solid Queue job)
+        </acceptance-criteria>
+
+        <business-rules>
+          - HR can see all employee reports
+          - Managers can see only their department reports
+          - Employees can see only their own report
+          - Overtime calculated as: hours > 40/week or > 8/day (configurable)
+          - Reports respect role-based access control
+        </business-rules>
+      </feature>
+
+      <!-- Feature 5: Notifications -->
+      <feature id="notifications" priority="medium" phase="2">
+        <title>Notification System</title>
+
+        <description>
+          Automated notifications via email and in-app alerts for key events like
+          shift assignments, reminders, swap requests, and overtime warnings.
+        </description>
+
+        <user-stories>
+          <story id="not-001">
+            As an Employee
+            I want to receive an email when assigned to a new shift
+            So that I'm immediately aware of my schedule changes
+          </story>
+
+          <story id="not-002">
+            As an Employee
+            I want to receive a reminder 1 hour before my shift starts
+            So that I don't forget to show up
+          </story>
+
+          <story id="not-003">
+            As a Manager
+            I want to be notified when shift coverage falls below requirement
+            So that I can take corrective action quickly
+          </story>
+
+          <story id="not-004">
+            As an HR user
+            I want to receive an alert when an employee exceeds 40 hours/week
+            So that I can manage overtime costs
+          </story>
+
+          <story id="not-005">
+            As a User
+            I want to see in-app notification badges
+            So that I can check alerts without email
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Email notifications via Action Mailer (SMTP config)
+          - In-app notifications stored in database (Notification model)
+          - Notification types: assignment, reminder, swap_request, overtime_alert, coverage_warning
+          - Email templates: professional HTML with clear CTAs
+          - Scheduled notifications via Solid Queue (shift reminders)
+          - User preferences: opt-out of specific notification types
+          - Badge count in navbar showing unread notifications
+        </acceptance-criteria>
+
+        <business-rules>
+          - Default: all notification types enabled
+          - Employees can disable non-critical notifications
+          - Critical notifications (assignment changes) cannot be disabled
+          - Reminders sent 1 hour before shift (configurable)
+          - Overtime alerts sent to HR when threshold reached
+          - Coverage alerts sent to managers when < 80% staffed
+        </business-rules>
+      </feature>
+
+      <!-- Feature 6: Approval Workflow -->
+      <feature id="approval-workflow" priority="medium" phase="2">
+        <title>Shift Assignment Approval Process</title>
+
+        <description>
+          Optional approval flow where shift assignments and swap requests require
+          manager approval before being confirmed.
+        </description>
+
+        <user-stories>
+          <story id="aw-001">
+            As an Admin
+            I want to enable approval workflow for my organization
+            So that managers review all assignments before finalization
+          </story>
+
+          <story id="aw-002">
+            As an Employee
+            I want to request a shift swap with a coworker
+            So that I can trade shifts when personal conflicts arise
+          </story>
+
+          <story id="aw-003">
+            As a Manager
+            I want to approve or reject pending swap requests
+            So that I maintain control over schedule changes
+          </story>
+
+          <story id="aw-004">
+            As a Manager
+            I want to see a list of pending approvals
+            So that I can process requests in a timely manner
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Approval workflow enabled/disabled per organization (setting)
+          - When enabled: assignments created as "pending_approval" status
+          - Manager sees approval queue with details
+          - Manager can approve → status becomes "confirmed"
+          - Manager can reject → assignment cancelled, notification sent
+          - Swap request: employee_a, employee_b, shift_a, shift_b, status
+          - Swap approval swaps assignments atomically (transaction)
+          - Timeout: pending approvals expire after 48 hours (configurable)
+        </acceptance-criteria>
+
+        <business-rules>
+          - Only managers of the shift's department can approve
+          - Admins can approve any request
+          - Employees cannot approve their own swap requests
+          - Approved swaps must still pass overlap and capacity validation
+          - Auto-approval option: small organizations can disable workflow
+        </business-rules>
+      </feature>
+
+      <!-- Feature 7: Shift Swap -->
+      <feature id="shift-swap" priority="medium" phase="2">
+        <title>Employee Shift Exchange</title>
+
+        <description>
+          Employees can request to swap shifts with coworkers, subject to manager approval
+          and system validation (no overlaps, both employees qualified for shifts).
+        </description>
+
+        <user-stories>
+          <story id="ss-001">
+            As an Employee
+            I want to propose swapping my Saturday shift with John's Sunday shift
+            So that I can attend a family event
+          </story>
+
+          <story id="ss-002">
+            As an Employee (John)
+            I want to accept or decline the swap proposal
+            So that I can indicate my willingness to trade
+          </story>
+
+          <story id="ss-003">
+            As a Manager
+            I want to review and approve/reject the swap
+            So that I ensure schedule integrity
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - SwapRequest model: requester_id, target_employee_id, shift_a_id, shift_b_id, status
+          - Status: proposed, accepted_by_target, rejected_by_target, approved, rejected
+          - Validation: no overlap for either employee after swap
+          - Validation: both employees meet shift requirements (if qualifications feature exists)
+          - Swap executes as atomic transaction (both assignments update)
+          - Notifications at each status change
+        </acceptance-criteria>
+
+        <business-rules>
+          - Both employees must agree before manager review
+          - Manager approval required unless auto-approval enabled
+          - Cannot swap past shifts (shift_start_time > now)
+          - Swap request expires after 48 hours if not accepted
+        </business-rules>
+      </feature>
+
+      <!-- Feature 8: Time Tracking -->
+      <feature id="time-tracking" priority="medium" phase="2">
+        <title>Clock In/Out Time Tracking</title>
+
+        <description>
+          Employees clock in at shift start and clock out at shift end. System tracks
+          actual worked hours vs scheduled hours for attendance reporting.
+        </description>
+
+        <user-stories>
+          <story id="tt-001">
+            As an Employee
+            I want to clock in when I arrive at work
+            So that my actual work time is recorded
+          </story>
+
+          <story id="tt-002">
+            As an Employee
+            I want to clock out when I leave
+            So that my shift is marked complete with actual duration
+          </story>
+
+          <story id="tt-003">
+            As a Manager
+            I want to see discrepancies between scheduled and actual times
+            So that I can address tardiness or early departures
+          </story>
+
+          <story id="tt-004">
+            As an HR user
+            I want to generate attendance reports showing on-time percentage
+            So that I can evaluate employee punctuality
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - TimeEntry model: assignment_id, clock_in_time, clock_out_time, notes
+          - Employee can clock in within 15 minutes before shift start
+          - Warning if clocking in >15 minutes late
+          - Clock out any time after shift start
+          - Actual hours calculated: clock_out - clock_in (minus breaks if tracked)
+          - UI shows: scheduled vs actual hours, delta
+          - Cannot clock in/out for other employees (except managers with override)
+        </acceptance-criteria>
+
+        <business-rules>
+          - One time entry per assignment
+          - Cannot clock in for future shifts
+          - Forgot to clock out: manager can manually add clock_out_time
+          - Attendance percentage: on_time_count / total_shifts * 100
+          - On-time defined as: clock_in_time <= shift_start_time + grace_period (15 min)
+        </business-rules>
+      </feature>
+
+      <!-- Feature 9: Overtime Management -->
+      <feature id="overtime-management" priority="medium" phase="2">
+        <title>Overtime Tracking and Alerts</title>
+
+        <description>
+          Automatically calculate overtime hours based on configurable rules (daily/weekly thresholds).
+          Alert HR when employees approach or exceed overtime limits.
+        </description>
+
+        <user-stories>
+          <story id="om-001">
+            As an HR user
+            I want to see each employee's overtime hours for the current week
+            So that I can manage labor costs
+          </story>
+
+          <story id="om-002">
+            As an HR user
+            I want to receive alerts when an employee exceeds 40 hours/week
+            So that I can decide whether to approve overtime or redistribute shifts
+          </story>
+
+          <story id="om-003">
+            As an Employee
+            I want to see my weekly hour total and overtime status
+            So that I know if I'm approaching limits
+          </story>
+
+          <story id="om-004">
+            As an Admin
+            I want to configure overtime rules (daily vs weekly, threshold hours)
+            So that I can match company policy and local labor laws
+          </story>
+        </user-stories>
+
+        <acceptance-criteria>
+          - Overtime settings: daily_threshold (8 hours), weekly_threshold (40 hours)
+          - Calculate: total_hours - threshold = overtime_hours
+          - Dashboard widget: current week hours, overtime hours
+          - Alert HR when employee reaches 90% of weekly threshold
+          - Alert HR when employee exceeds threshold
+          - Overtime report: employee, week, regular_hours, overtime_hours, total
+        </acceptance-criteria>
+
+        <business-rules>
+          - Overtime calculation based on scheduled hours (not actual if time tracking disabled)
+          - If time tracking enabled: use actual clock in/out hours
+          - Weekends count toward weekly total (configurable)
+          - Holidays may have different overtime rules (future enhancement)
+          - Managers warned when assigning shift that would cause overtime
+        </business-rules>
+      </feature>
+
+    </features>
+
+    <!-- USER ROLES -->
+    <roles>
+
+      <role id="admin" priority="critical">
+        <title>Administrator</title>
+        <description>
+          Full system access. Manages users, departments, system settings, and has
+          unrestricted access to all shifts and reports.
+        </description>
+
+        <permissions>
+          - Create/edit/delete users (all roles)
+          - Create/edit/delete departments
+          - Configure system settings (overtime rules, approval workflow, holidays)
+          - View/edit/delete all shifts (all departments)
+          - Assign/unassign any employee to any shift
+          - Override capacity limits
+          - Access all reports (system-wide)
+          - Approve/reject any swap or assignment request
+          - Manage shift templates
+          - Export data
+        </permissions>
+
+        <use-cases>
+          - System setup and configuration
+          - User account management
+          - Cross-department scheduling in emergencies
+          - System-wide analytics and auditing
+        </use-cases>
+      </role>
+
+      <role id="manager" priority="critical">
+        <title>Manager</title>
+        <description>
+          Department-level management. Creates shifts, assigns employees within their department,
+          approves requests, and views department reports.
+        </description>
+
+        <permissions>
+          - Create/edit/delete shifts in own department(s)
+          - Assign/unassign employees in own department
+          - View all department employees and their schedules
+          - Approve/reject shift assignments (if approval workflow enabled)
+          - Approve/reject swap requests in own department
+          - View department reports (coverage, hours, attendance)
+          - Create shift templates for own department
+          - Override clock in/out times (with notes/justification)
+        </permissions>
+
+        <restrictions>
+          - Cannot create users (request admin)
+          - Cannot access other departments' shifts (unless multi-department manager)
+          - Cannot modify system settings
+          - Cannot delete own manager account
+        </restrictions>
+
+        <use-cases>
+          - Weekly/monthly shift scheduling
+          - Handling employee swap requests
+          - Monitoring department coverage
+          - Adjusting schedules based on demand
+        </use-cases>
+      </role>
+
+      <role id="employee" priority="critical">
+        <title>Employee</title>
+        <description>
+          Standard user. Views own shifts, confirms/declines assignments, requests swaps,
+          clocks in/out, and views personal reports.
+        </description>
+
+        <permissions>
+          - View own shift assignments
+          - Confirm/decline pending assignments
+          - Request shift swaps with coworkers
+          - Clock in/out for own shifts
+          - View own schedule (calendar view)
+          - View own reports (hours worked, overtime)
+          - Update own profile (email, phone, preferences)
+          - View available open shifts (if pickup feature enabled)
+        </permissions>
+
+        <restrictions>
+          - Cannot create shifts
+          - Cannot assign self to shifts (unless pickup feature)
+          - Cannot view other employees' full schedules (only names for swap purposes)
+          - Cannot access department or system-wide reports
+          - Cannot approve requests
+        </restrictions>
+
+        <use-cases>
+          - Checking weekly schedule
+          - Responding to shift assignments
+          - Requesting time off or shift swaps
+          - Tracking personal hours and overtime
+        </use-cases>
+      </role>
+
+      <role id="hr" priority="high">
+        <title>Human Resources</title>
+        <description>
+          Analytics and reporting specialist. Access to all employee data, reports, and
+          overtime tracking. Cannot create/edit shifts but views all scheduling data.
+        </description>
+
+        <permissions>
+          - View all employees and their schedules (read-only)
+          - Generate all types of reports (employee, department, time, attendance, cost)
+          - Export reports to PDF/Excel/CSV
+          - View overtime alerts and trends
+          - Access attendance and punctuality data
+          - View time tracking records (clock in/out)
+          - Download payroll-ready data exports
+        </permissions>
+
+        <restrictions>
+          - Cannot create/edit/delete shifts (read-only scheduling)
+          - Cannot assign employees to shifts
+          - Cannot approve swap requests (manager's responsibility)
+          - Cannot modify user accounts
+        </restrictions>
+
+        <use-cases>
+          - Monthly payroll preparation
+          - Compliance reporting (labor laws)
+          - Workforce analytics and planning
+          - Identifying overtime trends
+        </use-cases>
+      </role>
+
+    </roles>
+
+    <!-- SHIFT TYPES -->
+    <shift-types>
+      <description>
+        Predefined shift types with typical time ranges. System supports custom shift types
+        that can be dynamically created by admins.
+      </description>
+
+      <predefined-types>
+        <type id="morning">
+          <name>Morning Shift</name>
+          <typical-hours>08:00 - 16:00</typical-hours>
+          <color-code>#3B82F6</color-code> <!-- Blue -->
+        </type>
+
+        <type id="evening">
+          <name>Evening Shift</name>
+          <typical-hours>16:00 - 00:00</typical-hours>
+          <color-code>#F97316</color-code> <!-- Orange -->
+        </type>
+
+        <type id="night">
+          <name>Night Shift</name>
+          <typical-hours>00:00 - 08:00</typical-hours>
+          <color-code>#8B5CF6</color-code> <!-- Purple -->
+        </type>
+
+        <type id="split">
+          <name>Split Shift</name>
+          <typical-hours>08:00-12:00 + 18:00-22:00</typical-hours>
+          <color-code>#EC4899</color-code> <!-- Pink -->
+          <note>Two separate time blocks with break in between</note>
+        </type>
+
+        <type id="flexible">
+          <name>Flexible Shift</name>
+          <typical-hours>Variable</typical-hours>
+          <color-code>#10B981</color-code> <!-- Green -->
+          <note>Employee chooses start time within range</note>
+        </type>
+
+        <type id="on-call">
+          <name>On-Call</name>
+          <typical-hours>24-hour availability</typical-hours>
+          <color-code>#6B7280</color-code> <!-- Gray -->
+          <note>Employee must be reachable, not on-site</note>
+        </type>
+      </predefined-types>
+
+      <custom-types>
+        <capability>
+          Admins can create custom shift types with:
+          - Custom name
+          - Default duration
+          - Color code for calendar
+          - Description/notes
+        </capability>
+
+        <examples>
+          - "Weekend Double" (16-hour shifts)
+          - "Training Shift" (4-hour orientation)
+          - "Holiday Coverage" (premium pay shifts)
+        </examples>
+      </custom-types>
+    </shift-types>
+
+    <!-- TIME MANAGEMENT -->
+    <time-management>
+
+      <timezone>
+        <strategy>Single timezone (UTC) for MVP</strategy>
+        <rationale>
+          Simplifies initial implementation. All times stored in UTC, displayed in user's local timezone
+          via browser. Future: multi-timezone support for distributed organizations.
+        </rationale>
+        <implementation>
+          - Database: timestamp columns in UTC
+          - Rails: Time.zone = 'UTC' (default)
+          - Frontend: Display in browser's local timezone (JavaScript Date)
+          - User preference (future): Allow user to set preferred display timezone
+        </implementation>
+      </timezone>
+
+      <holidays>
+        <management>
+          System maintains a holidays table with date and description.
+          Admins can add/edit/delete holidays.
+        </management>
+
+        <behavior>
+          - Shifts CAN be created on holidays (some businesses operate 24/7)
+          - Holiday shifts visually marked in calendar (badge/icon)
+          - Optional: Holiday pay rate multiplier (future feature)
+          - Warning shown when assigning employee to holiday shift
+        </behavior>
+
+        <default-holidays>
+          System seeded with common holidays (configurable per country):
+          - New Year's Day
+          - National holidays (country-specific)
+          - End of year holidays
+        </default-holidays>
+      </holidays>
+
+      <overtime-rules>
+        <daily-threshold>8 hours</daily-threshold>
+        <weekly-threshold>40 hours</weekly-threshold>
+
+        <calculation>
+          - Daily overtime: Any hours worked beyond 8 in a single day
+          - Weekly overtime: Any hours worked beyond 40 in a 7-day period (Monday-Sunday)
+          - Use whichever results in more overtime (employee-favorable)
+        </calculation>
+
+        <configuration>
+          Admins can configure:
+          - Enable/disable daily vs weekly overtime
+          - Threshold values
+          - Overtime multiplier (1.5x, 2x) for future cost calculations
+        </configuration>
+      </overtime-rules>
+
+      <break-times>
+        <tracking>MVP: Breaks NOT tracked separately</tracking>
+        <future-enhancement>
+          - Define break duration per shift (e.g., 30 min unpaid, 15 min paid)
+          - Deduct break time from total hours
+          - Track break compliance (employee took breaks)
+        </future-enhancement>
+      </break-times>
+
+      <shift-duration>
+        <minimum>4 hours</minimum>
+        <maximum>12 hours</maximum>
+        <rationale>
+          - Minimum: Ensure shifts are economically viable
+          - Maximum: Prevent excessive work hours, safety concerns
+          - Configurable by admin if needed (e.g., 16-hour emergency shifts)
+        </rationale>
+      </shift-duration>
+
+      <shift-boundaries>
+        <midnight-spanning>
+          Shifts can span midnight (e.g., 23:00 - 07:00 next day).
+          System handles date arithmetic correctly.
+        </midnight-spanning>
+
+        <grace-period>
+          Employees can clock in up to 15 minutes before shift start.
+          Clock in >15 minutes late triggers warning (not blocking, for reporting).
+        </grace-period>
+      </shift-boundaries>
+
+    </time-management>
+
+    <!-- NOTIFICATIONS -->
+    <notifications>
+
+      <channels>
+        <channel id="email" priority="high">
+          <technology>Action Mailer (Rails built-in)</technology>
+          <provider>SMTP (configurable: Gmail, SendGrid, Mailgun)</provider>
+          <use-cases>
+            - Shift assignment notifications
+            - Shift reminder (1 hour before)
+            - Swap request status updates
+            - Overtime alerts to HR
+          </use-cases>
+        </channel>
+
+        <channel id="in-app" priority="high">
+          <technology>Database-backed notifications table</technology>
+          <display>Navbar bell icon with badge count, dropdown list</display>
+          <use-cases>
+            - Real-time alerts (via Hotwire/Turbo Streams or polling)
+            - Less urgent notifications
+            - Backup for email (in case email fails)
+          </use-cases>
+        </channel>
+
+        <channel id="sms" priority="low" phase="3">
+          <technology>Twilio API</technology>
+          <use-cases>Emergency notifications, shift reminders for employees without email access</use-cases>
+          <note>Future enhancement, requires paid service</note>
+        </channel>
+
+        <channel id="push" priority="low" phase="3">
+          <technology>Web Push API or mobile app push</technology>
+          <use-cases>Mobile app notifications</use-cases>
+          <note>Requires PWA or native app</note>
+        </channel>
+      </channels>
+
+      <scenarios>
+
+        <scenario id="assignment-created">
+          <trigger>Manager assigns employee to shift</trigger>
+          <recipients>Assigned employee</recipients>
+          <channels>Email + In-app</channels>
+          <content>
+            You have been assigned to [Shift Title] on [Date] from [Start] to [End].
+            Please confirm your availability.
+          </content>
+        </scenario>
+
+        <scenario id="shift-reminder">
+          <trigger>1 hour before shift start time</trigger>
+          <recipients>All employees assigned to shift with status=confirmed</recipients>
+          <channels>Email + In-app</channels>
+          <content>
+            Reminder: Your shift "[Shift Title]" starts in 1 hour at [Start Time].
+          </content>
+          <implementation>Solid Queue scheduled job</implementation>
+        </scenario>
+
+        <scenario id="swap-request">
+          <trigger>Employee proposes shift swap</trigger>
+          <recipients>Target employee, Manager</recipients>
+          <channels>Email + In-app</channels>
+          <content>
+            [Employee A] has requested to swap shifts with you. Review the request.
+          </content>
+        </scenario>
+
+        <scenario id="overtime-alert">
+          <trigger>Employee reaches 90% of weekly overtime threshold (36 hours)</trigger>
+          <recipients>HR role users</recipients>
+          <channels>Email + In-app</channels>
+          <content>
+            Alert: [Employee Name] has worked 36 hours this week, approaching overtime (40h threshold).
+          </content>
+        </scenario>
+
+        <scenario id="coverage-warning">
+          <trigger>Shift is <80% staffed and start time is <48 hours away</trigger>
+          <recipients>Manager of shift's department</recipients>
+          <channels>Email + In-app</channels>
+          <content>
+            Warning: Shift "[Shift Title]" on [Date] is understaffed (2/5 filled). Please assign more employees.
+          </content>
+        </scenario>
+
+      </scenarios>
+
+      <user-preferences>
+        <settings>
+          - Enable/disable email notifications (per type)
+          - Enable/disable in-app notifications (per type)
+          - Reminder timing: 1 hour, 2 hours, 24 hours before shift (default: 1 hour)
+        </settings>
+
+        <restrictions>
+          - Critical notifications (assignment changes, cancellations) cannot be fully disabled
+          - At minimum, in-app notifications always enabled for critical events
+        </restrictions>
+      </user-preferences>
+
+    </notifications>
+
+    <!-- BUSINESS RULES -->
+    <business-rules>
+
+      <rule id="no-overlap" priority="critical">
+        <title>No Overlapping Shift Assignments</title>
+        <description>
+          A single employee cannot be assigned to two shifts with overlapping time ranges.
+        </description>
+        <validation>
+          Before creating assignment:
+          - Query existing assignments for employee
+          - Check if new shift time range intersects with any existing shift
+          - If overlap detected: reject with error message
+        </validation>
+        <exception>Manager can override with explicit warning (emergency situations)</exception>
+      </rule>
+
+      <rule id="capacity-limit" priority="high">
+        <title>Shift Capacity Enforcement</title>
+        <description>
+          A shift with defined capacity (e.g., 5) cannot have more than 5 confirmed assignments.
+        </description>
+        <validation>
+          Before confirming assignment:
+          - Count confirmed assignments for shift
+          - If count >= capacity: reject new assignment
+        </validation>
+        <exception>
+          - Capacity = null means unlimited
+          - Manager can override capacity (with warning)
+        </exception>
+      </rule>
+
+      <rule id="shift-duration" priority="medium">
+        <title>Shift Duration Limits</title>
+        <description>
+          Shifts must be between 4 and 12 hours in duration.
+        </description>
+        <validation>
+          duration = end_time - start_time
+          If duration &lt; 4 hours OR duration &gt; 12 hours: validation error
+        </validation>
+        <exception>Admin can configure min/max in system settings</exception>
+      </rule>
+
+      <rule id="past-shift-immutability" priority="high">
+        <title>Past Shifts Are Read-Only</title>
+        <description>
+          Shifts that have already ended cannot be edited or deleted (data integrity for reports).
+        </description>
+        <validation>
+          If shift.end_time &lt; Time.current: prevent edit/delete
+        </validation>
+        <exception>Admins can edit with audit log entry (for corrections)</exception>
+      </rule>
+
+      <rule id="assignment-confirmation-deadline" priority="medium">
+        <title>Assignment Confirmation Deadline</title>
+        <description>
+          Employees must confirm/decline assignments at least 24 hours before shift start.
+        </description>
+        <behavior>
+          - If shift.start_time - 24.hours &lt; Time.current: auto-confirm pending assignments
+          - Notification sent to employee: "Your assignment has been auto-confirmed."
+        </behavior>
+      </rule>
+
+      <rule id="overtime-warning" priority="medium">
+        <title>Overtime Warning on Assignment</title>
+        <description>
+          When assigning a shift that would push employee into overtime, warn the manager.
+        </description>
+        <behavior>
+          - Calculate employee's total hours for the week (including new shift)
+          - If total > overtime threshold: show warning modal
+          - Manager can proceed or cancel assignment
+        </behavior>
+      </rule>
+
+      <rule id="holiday-shift-warning" priority="low">
+        <title>Holiday Shift Warning</title>
+        <description>
+          When creating a shift on a defined holiday, warn the manager.
+        </description>
+        <behavior>
+          - Check if shift date matches any holiday in holidays table
+          - If match: show warning: "This shift is on [Holiday Name]. Proceed?"
+          - Manager can proceed
+        </behavior>
+      </rule>
+
+    </business-rules>
+
+    <!-- INTEGRATIONS -->
+    <integrations>
+
+      <strategy>
+        MVP: Standalone system. No external integrations.
+        Phase 2+: Add integrations based on user demand.
+      </strategy>
+
+      <future-integrations>
+
+        <integration id="hr-system" priority="medium">
+          <examples>BambooHR, Workday, SAP SuccessFactors</examples>
+          <purpose>Sync employee data (new hires, terminations, department changes)</purpose>
+          <approach>Webhook or scheduled API sync</approach>
+        </integration>
+
+        <integration id="payroll" priority="high">
+          <examples>ADP, Gusto, Paychex</examples>
+          <purpose>Export hours worked for payroll processing</purpose>
+          <approach>CSV/Excel export or API push</approach>
+        </integration>
+
+        <integration id="calendar" priority="medium">
+          <examples>Google Calendar, Outlook, iCal</examples>
+          <purpose>Sync shifts to employee's personal calendar</purpose>
+          <approach>iCal feed URL per employee</approach>
+        </integration>
+
+        <integration id="communication" priority="low">
+          <examples>Slack, Microsoft Teams</examples>
+          <purpose>Send shift notifications to team channels</purpose>
+          <approach>Webhook notifications</approach>
+        </integration>
+
+        <integration id="biometric" priority="low">
+          <examples>Fingerprint scanners, RFID badge readers</examples>
+          <purpose>Automated clock in/out</purpose>
+          <approach>Device API integration</approach>
+        </integration>
+
+      </future-integrations>
+
+    </integrations>
+
+    <!-- MOBILE & API -->
+    <mobile-and-api>
+
+      <approach>Web-first with Progressive Web App (PWA) capabilities</approach>
+
+      <web-application>
+        <technology>Ruby on Rails with responsive views (Hotwire/Turbo)</technology>
+        <features>
+          - Responsive design: works on mobile browsers (iOS Safari, Chrome)
+          - Mobile-optimized UI: touch-friendly buttons, swipeable calendar
+          - Works offline: Service Worker for basic offline viewing (PWA)
+        </features>
+      </web-application>
+
+      <api>
+        <architecture>RESTful API under /api/v1 namespace</architecture>
+        <purpose>
+          - Future mobile app (React Native, Flutter)
+          - Third-party integrations
+          - Automated testing (Postman/Newman)
+        </purpose>
+
+        <endpoints-summary>
+          Authentication:
+          - POST /api/v1/auth/login
+          - POST /api/v1/auth/refresh
+          - DELETE /api/v1/auth/logout
+
+          Shifts:
+          - GET /api/v1/shifts (list, paginated, filtered)
+          - POST /api/v1/shifts (create)
+          - GET /api/v1/shifts/:id
+          - PATCH /api/v1/shifts/:id
+          - DELETE /api/v1/shifts/:id
+
+          Assignments:
+          - GET /api/v1/assignments (my assignments or all if manager)
+          - POST /api/v1/assignments (assign employee to shift)
+          - PATCH /api/v1/assignments/:id (confirm/decline)
+          - DELETE /api/v1/assignments/:id (unassign)
+
+          Reports:
+          - GET /api/v1/reports/employee/:id?start_date=&end_date=
+          - GET /api/v1/reports/department/:id?start_date=&end_date=
+          - GET /api/v1/reports/overtime
+
+          (Full API spec in technical-plan.poml)
+        </endpoints-summary>
+
+        <authentication>JWT tokens in Authorization header</authentication>
+        <versioning>URL-based (/api/v1, /api/v2 for breaking changes)</versioning>
+        <response-format>JSON with consistent structure (data, meta, errors)</response-format>
+      </api>
+
+      <pwa-features>
+        <install>Add to Home Screen prompt on mobile</install>
+        <offline>Cache shift list and calendar for offline viewing</offline>
+        <notifications>Web Push API for shift reminders (future)</notifications>
+      </pwa-features>
+
+    </mobile-and-api>
+
+    <!-- SCALE PLATFORM ALIGNMENT -->
+    <scale-platform-alignment>
+
+      <reference-url>https://github.com/Srhot/scale-platform</reference-url>
+
+      <adopted-patterns>
+        <pattern id="jwt-auth">
+          JWT-based authentication with refresh tokens.
+          Pattern: JsonWebToken concern, AuthController, authenticate_request before_action.
+        </pattern>
+
+        <pattern id="solid-stack">
+          Solid Cache (PostgreSQL-backed caching)
+          Solid Queue (background jobs)
+          Solid Cable (WebSocket for real-time features - future)
+        </pattern>
+
+        <pattern id="service-objects">
+          Extract complex business logic to service objects.
+          Example: Shifts::CreateService, Assignments::ConfirmService
+          Return Result objects (success: true/false, data, errors)
+        </pattern>
+
+        <pattern id="api-versioning">
+          Namespace API controllers under Api::V1::
+          Future: Api::V2:: for breaking changes
+        </pattern>
+
+        <pattern id="seed-data">
+          Use FactoryBot + Faker in db/seeds.rb for realistic test data.
+          Idempotent seeds (safe to run multiple times).
+        </pattern>
+      </adopted-patterns>
+
+      <vardiyapro-specific-features>
+
+        <feature id="overlap-validation">
+          <description>
+            Unlike generic CRUD, VardiyaPro must prevent overlapping shift assignments.
+          </description>
+          <implementation>
+            Custom validator in Assignment model:
+            validate :no_overlapping_shifts
+            Query: assignments for same employee where time ranges intersect
+          </implementation>
+        </feature>
+
+        <feature id="capacity-management">
+          <description>
+            Shifts have capacity limits (max employees). Track assigned count.
+          </description>
+          <implementation>
+            Shift model: capacity column (integer, nullable)
+            Before assignment confirm: validate assignments.confirmed.count &lt; shift.capacity
+          </implementation>
+        </feature>
+
+        <feature id="shift-templates">
+          <description>
+            Managers create templates for recurring shifts (e.g., "Monday Morning - Store A").
+          </description>
+          <implementation>
+            ShiftTemplate model: title, shift_type, duration, day_of_week, department_id
+            "Create from template" action: instantiate Shift with template attributes + specific date
+          </implementation>
+        </feature>
+
+        <feature id="business-rules-engine">
+          <description>
+            Complex validation: no overlaps, capacity, overtime warnings, holiday warnings.
+          </description>
+          <implementation>
+            Service objects call validators before persistence.
+            Return detailed error messages for UI display.
+          </implementation>
+        </feature>
+
+      </vardiyapro-specific-features>
+
+      <lessons-learned>
+        <lesson>Lock Ruby version in Gemfile and .ruby-version for consistency</lesson>
+        <lesson>Use ENV variables for all secrets (database password, JWT secret)</lesson>
+        <lesson>Install Solid gems migrations early (don't forget!)</lesson>
+        <lesson>Configure CORS properly (restrictive in production)</lesson>
+        <lesson>Test with realistic data volume (pagination, N+1 queries)</lesson>
+        <lesson>Document API in Postman collection from day 1</lesson>
+      </lessons-learned>
+
+    </scale-platform-alignment>
+
+  </specification>
+
+  <!-- SUMMARY -->
+  <summary>
+    <scope-recap>
+      VardiyaPro MVP includes:
+      - 9 core features (Shift Management, Assignment, Calendar, Reporting, Notifications, Approval, Swap, Time Tracking, Overtime)
+      - 4 user roles (Admin, Manager, Employee, HR)
+      - 6 predefined shift types + custom types
+      - Email + in-app notifications
+      - RESTful API (/api/v1)
+      - Web-first with PWA capabilities
+      - Standalone (no integrations in MVP)
+    </scope-recap>
+
+    <success-criteria>
+      - Reduce scheduling conflicts to near-zero (overlap prevention)
+      - 50% reduction in time spent on manual scheduling (templates, bulk assign)
+      - 90% employee satisfaction with schedule transparency
+      - Real-time visibility into coverage gaps
+      - Accurate overtime tracking for payroll compliance
+    </success-criteria>
+
+    <next-steps>
+      This specification defines WHAT VardiyaPro does and WHY.
+      Next: Technical Plan (HOW to implement - database schema, API design, gems, architecture).
+    </next-steps>
+  </summary>
+
+</poml>

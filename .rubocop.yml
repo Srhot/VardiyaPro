@@ -1,0 +1,94 @@
+# frozen_string_literal: true
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+
+# Disable BlockLength for test files and seeds
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*_spec.rb'
+    - 'spec/factories/**/*.rb'
+    - 'config/routes.rb'
+    - 'config/environments/*.rb'
+    - 'db/seeds.rb'
+
+# Disable MethodLength for some files
+Metrics/MethodLength:
+  Max: 25
+  Exclude:
+    - 'db/seeds.rb'
+    - 'app/controllers/**/*'
+    - 'app/services/**/*'
+
+# Relax AbcSize significantly
+Metrics/AbcSize:
+  Max: 75
+  Exclude:
+    - 'db/seeds.rb'
+    - 'spec/**/*'
+    - 'app/controllers/**/*'
+    - 'app/services/**/*'
+    - 'app/models/**/*'
+
+# Relax Cyclomatic Complexity
+Metrics/CyclomaticComplexity:
+  Max: 15
+  Exclude:
+    - 'db/seeds.rb'
+    - 'app/controllers/**/*'
+    - 'app/services/**/*'
+
+# Relax Perceived Complexity
+Metrics/PerceivedComplexity:
+  Max: 15
+  Exclude:
+    - 'db/seeds.rb'
+    - 'app/controllers/**/*'
+    - 'app/services/**/*'
+
+# Disable ClassLength
+Metrics/ClassLength:
+  Enabled: false
+
+# Layout - Allow longer lines
+Layout/LineLength:
+  Max: 250
+  Exclude:
+    - 'db/seeds.rb'
+    - 'app/services/**/*'
+
+# Naming - Disable strict naming rules
+Naming/PredicatePrefix:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+# Lint - Disable duplicate branch detection
+Lint/DuplicateBranch:
+  Enabled: false
+
+# Style preferences - less strict
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Style/EmptyElse:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false

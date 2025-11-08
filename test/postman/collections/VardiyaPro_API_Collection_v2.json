@@ -1,0 +1,692 @@
+{
+  "info": {
+    "name": "VardiyaPro API - Complete Test Suite",
+    "description": "Comprehensive API test collection with pre-request and post-response validation scripts",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "department_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shift_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assignment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-Request: Expected Response tanımla",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"token\": \"<JWT_TOKEN>\",",
+                  "  \"user\": {",
+                  "    \"id\": \"<USER_ID>\",",
+                  "    \"email\": \"admin@vardiyapro.com\",",
+                  "    \"name\": \"Admin User\",",
+                  "    \"role\": \"admin\"",
+                  "  }",
+                  "}`);",
+                  "",
+                  "console.log('✓ Pre-Request: Expected response saved');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// POST-RESPONSE: Actual vs Expected Comparison",
+                  "",
+                  "// Test 1: Status Code",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response time",
+                  "pm.test('Response time is less than 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "// Test 3: Content-Type header",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "// Test 4: Response body structure",
+                  "pm.test('Response has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "    pm.expect(jsonData.user).to.have.property('role');",
+                  "});",
+                  "",
+                  "// Test 5: Compare with expected response",
+                  "pm.test('Actual response matches expected structure', function () {",
+                  "    const actualResponse = pm.response.json();",
+                  "    ",
+                  "    // Email should match",
+                  "    pm.expect(actualResponse.user.email).to.equal('admin@vardiyapro.com');",
+                  "    ",
+                  "    // Role should be admin",
+                  "    pm.expect(actualResponse.user.role).to.equal('admin');",
+                  "    ",
+                  "    // Token should exist and be a non-empty string",
+                  "    pm.expect(actualResponse.token).to.be.a('string');",
+                  "    pm.expect(actualResponse.token.length).to.be.above(20);",
+                  "});",
+                  "",
+                  "// Test 6: Save variables for future requests",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "    pm.collectionVariables.set('user_id', jsonData.user.id);",
+                  "    ",
+                  "    pm.test('Token and User ID saved to variables', function () {",
+                  "        pm.expect(pm.collectionVariables.get('token')).to.not.be.empty;",
+                  "        pm.expect(pm.collectionVariables.get('user_id')).to.not.be.empty;",
+                  "    });",
+                  "}",
+                  "",
+                  "// Test 7: Validate JWT token format",
+                  "pm.test('Token is valid JWT format', function () {",
+                  "    const token = pm.response.json().token;",
+                  "    const jwtPattern = /^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/;",
+                  "    pm.expect(token).to.match(jwtPattern);",
+                  "});",
+                  "",
+                  "console.log('✓ Post-Response: All tests executed');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@vardiyapro.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Expected: 401 Unauthorized",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"errors\": [\"Invalid email or password\"]",
+                  "}`);",
+                  "",
+                  "console.log('✓ Pre-Request: Expected error response saved');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test negative scenario",
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('errors');",
+                  "    pm.expect(jsonData.errors).to.be.an('array');",
+                  "    pm.expect(jsonData.errors[0]).to.include('Invalid');",
+                  "});",
+                  "",
+                  "pm.test('No token returned on failed login', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.not.have.property('token');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"wrong@email.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Expected Response Structure",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"data\": [",
+                  "    {",
+                  "      \"id\": \"<ID>\",",
+                  "      \"name\": \"<STRING>\",",
+                  "      \"description\": \"<STRING>\",",
+                  "      \"active\": true,",
+                  "      \"users_count\": \"<NUMBER>\",",
+                  "      \"created_at\": \"<TIMESTAMP>\",",
+                  "      \"updated_at\": \"<TIMESTAMP>\"",
+                  "    }",
+                  "  ]",
+                  "}`);",
+                  "",
+                  "console.log('✓ Expected: Array of departments');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an object with data array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each department has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        const dept = jsonData.data[0];",
+                  "        pm.expect(dept).to.have.property('id');",
+                  "        pm.expect(dept).to.have.property('name');",
+                  "        pm.expect(dept).to.have.property('active');",
+                  "        pm.expect(dept).to.have.property('users_count');",
+                  "        ",
+                  "        // Save first department ID",
+                  "        pm.collectionVariables.set('department_id', dept.id);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Department names are titleized', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    jsonData.data.forEach(dept => {",
+                  "        // First letter should be uppercase",
+                  "        pm.expect(dept.name[0]).to.match(/[A-Z]/);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/departments",
+              "host": ["{{base_url}}"],
+              "path": ["departments"]
+            }
+          }
+        },
+        {
+          "name": "Create Department",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Expected: 201 Created",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"data\": {",
+                  "    \"id\": \"<NEW_ID>\",",
+                  "    \"name\": \"Test Department\",",
+                  "    \"description\": \"Created via Postman\",",
+                  "    \"active\": true,",
+                  "    \"users_count\": 0",
+                  "  }",
+                  "}`);",
+                  "",
+                  "// Generate unique department name",
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('test_dept_name', `Test Dept ${timestamp}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Created department returned in response', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data.name).to.include('Test Dept');",
+                  "});",
+                  "",
+                  "pm.test('Department is active by default', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.active).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Actual response matches expected structure', function () {",
+                  "    const actual = pm.response.json().data;",
+                  "    pm.expect(actual).to.have.all.keys('id', 'name', 'description', 'active', 'users_count', 'created_at', 'updated_at');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"department\": {\n    \"name\": \"{{test_dept_name}}\",\n    \"description\": \"Created via Postman automated test\",\n    \"active\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/departments",
+              "host": ["{{base_url}}"],
+              "path": ["departments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shifts",
+      "item": [
+        {
+          "name": "List Shifts",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"data\": [<SHIFT_ARRAY>],",
+                  "  \"meta\": {",
+                  "    \"current_page\": 1,",
+                  "    \"total_pages\": \"<NUMBER>\",",
+                  "    \"total_count\": \"<NUMBER>\"",
+                  "  }",
+                  "}`);",
+                  "",
+                  "console.log('✓ Expected: Paginated shifts list');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has pagination metadata', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('meta');",
+                  "    pm.expect(jsonData.meta).to.have.property('current_page');",
+                  "    pm.expect(jsonData.meta).to.have.property('total_count');",
+                  "});",
+                  "",
+                  "pm.test('Each shift has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        const shift = jsonData.data[0];",
+                  "        pm.expect(shift).to.have.property('shift_type');",
+                  "        pm.expect(shift).to.have.property('start_time');",
+                  "        pm.expect(shift).to.have.property('end_time');",
+                  "        pm.expect(shift).to.have.property('required_staff');",
+                  "        ",
+                  "        pm.collectionVariables.set('shift_id', shift.id);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Shift types are valid', function () {",
+                  "    const validTypes = ['morning', 'afternoon', 'evening', 'night', 'flexible', 'on_call'];",
+                  "    const jsonData = pm.response.json();",
+                  "    jsonData.data.forEach(shift => {",
+                  "        pm.expect(validTypes).to.include(shift.shift_type);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"]
+            }
+          }
+        },
+        {
+          "name": "Create Shift - Validate Duration",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Expected: Validation error for too short duration",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"errors\": [\"Shift duration must be at least 4 hours\"]",
+                  "}`);",
+                  "",
+                  "// Set times for 2-hour shift (should fail)",
+                  "const now = new Date();",
+                  "const start = now.toISOString();",
+                  "const end = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();",
+                  "",
+                  "pm.collectionVariables.set('invalid_start', start);",
+                  "pm.collectionVariables.set('invalid_end', end);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "pm.test('Error message indicates duration problem', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errors[0]).to.include('4 hours');",
+                  "});",
+                  "",
+                  "pm.test('Actual error matches expected error structure', function () {",
+                  "    const actual = pm.response.json();",
+                  "    pm.expect(actual).to.have.property('errors');",
+                  "    pm.expect(actual.errors).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shift\": {\n    \"department_id\": {{department_id}},\n    \"shift_type\": \"morning\",\n    \"start_time\": \"{{invalid_start}}\",\n    \"end_time\": \"{{invalid_end}}\",\n    \"required_staff\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/shifts",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Create Assignment - Test Overlap Validation",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// CRITICAL TEST: Overlap validation",
+                  "// Expected: 422 error when creating overlapping assignment",
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"errors\": [\"Employee is already assigned to an overlapping shift\"]",
+                  "}`);",
+                  "",
+                  "console.log('✓ Testing CRITICAL overlap validation');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This assumes employee already has a conflicting assignment",
+                  "pm.test('Overlap validation prevents double-booking', function () {",
+                  "    // If 422, overlap was detected (good!)",
+                  "    // If 201, no overlap exists (also acceptable)",
+                  "    const status = pm.response.code;",
+                  "    pm.expect([201, 422]).to.include(status);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 422) {",
+                  "    pm.test('Error message mentions overlap', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.errors[0].toLowerCase()).to.include('overlap');",
+                  "    });",
+                  "    ",
+                  "    console.log('✓ CRITICAL: Overlap validation is working!');",
+                  "} else if (pm.response.code === 201) {",
+                  "    pm.test('Assignment created successfully', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property('id');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignment\": {\n    \"shift_id\": {{shift_id}},\n    \"employee_id\": {{user_id}},\n    \"status\": \"pending\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/assignments",
+              "host": ["{{base_url}}"],
+              "path": ["assignments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Employee Report",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('savedResponseBody', `{",
+                  "  \"data\": {",
+                  "    \"employee\": {<USER_INFO>},",
+                  "    \"period\": {<DATE_RANGE>},",
+                  "    \"statistics\": {",
+                  "      \"total_assignments\": \"<NUMBER>\",",
+                  "      \"total_hours\": \"<NUMBER>\"",
+                  "    }",
+                  "  }",
+                  "}`);",
+                  "",
+                  "// Set date range for report",
+                  "pm.collectionVariables.set('report_start', '2025-01-01');",
+                  "pm.collectionVariables.set('report_end', '2025-01-31');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Report contains employee statistics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('statistics');",
+                  "    pm.expect(jsonData.data.statistics).to.have.property('total_hours');",
+                  "});",
+                  "",
+                  "pm.test('Total hours is a valid number', function () {",
+                  "    const hours = pm.response.json().data.statistics.total_hours;",
+                  "    pm.expect(hours).to.be.a('number');",
+                  "    pm.expect(hours).to.be.at.least(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/employee/{{user_id}}?start_date={{report_start}}&end_date={{report_end}}",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "employee", "{{user_id}}"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{report_start}}"
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{report_end}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

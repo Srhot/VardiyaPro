@@ -1,0 +1,17 @@
+Hello <%= @employee.name %>,
+
+You have been assigned to a new shift:
+
+Department: <%= @shift.department.name %>
+Shift Type: <%= @shift.shift_type.titleize %>
+Start Time: <%= @shift.start_time.strftime('%B %d, %Y at %I:%M %p') %>
+End Time: <%= @shift.end_time.strftime('%B %d, %Y at %I:%M %p') %>
+Duration: <%= @shift.duration_hours %> hours
+<% if @shift.description.present? %>Description: <%= @shift.description %><% end %>
+
+Status: <%= @assignment.status.titleize %>
+
+Please confirm your availability for this shift.
+
+Best regards,
+VardiyaPro Team

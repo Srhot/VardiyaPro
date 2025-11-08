@@ -1,0 +1,882 @@
+<poml>
+  <role>Technical Architect for VardiyaPro</role>
+  <task>Design HOW to implement - Database schema, API endpoints, gems, configuration</task>
+
+  <document src="constitution.poml" type="constraints"/>
+  <document src="specification.poml" type="requirements"/>
+  <document src="https://github.com/Srhot/scale-platform" type="reference"/>
+
+  <technical-plan>
+
+    <!-- TECHNOLOGY STACK -->
+    <technology-stack>
+      <runtime>
+        <ruby>3.3.9</ruby>
+        <rails>8.1.0</rails>
+        <bundler>2.5+</bundler>
+      </runtime>
+
+      <database>
+        <primary>PostgreSQL 15.x</primary>
+        <adapter>pg gem ~> 1.6.2</adapter>
+        <extensions>pgcrypto (UUID support)</extensions>
+      </database>
+
+      <rails-stack>
+        <cache>Solid Cache (PostgreSQL-backed)</cache>
+        <queue>Solid Queue (background jobs)</queue>
+        <cable>Solid Cable (WebSockets - future)</cable>
+        <storage>Active Storage (if file uploads needed)</storage>
+      </rails-stack>
+
+      <authentication>
+        <strategy>JWT (JSON Web Tokens)</strategy>
+        <gems>bcrypt ~> 3.1.20, jwt ~> 3.1.2</gems>
+        <token-expiry>24 hours (configurable)</token-expiry>
+      </authentication>
+
+      <api>
+        <cors>rack-cors gem</cors>
+        <serialization>Active Model Serializers or Jbuilder</serialization>
+        <pagination>Kaminari gem</pagination>
+        <versioning>URL-based (/api/v1)</versioning>
+      </api>
+
+      <testing>
+        <framework>RSpec Rails</framework>
+        <factories>FactoryBot</factories>
+        <fake-data>Faker</fake-data>
+        <coverage>SimpleCov</coverage>
+        <api-testing>Postman + Newman</api-testing>
+      </testing>
+
+      <code-quality>
+        <linter>RuboCop (Rails Omakase)</linter>
+        <security>Brakeman, Bundler Audit</security>
+        <performance>Bullet (N+1 detection)</performance>
+      </code-quality>
+    </technology-stack>
+
+    <!-- DATABASE SCHEMA -->
+    <database-schema>
+
+      <!-- Users Table -->
+      <table name="users">
+        <purpose>Authentication and user management</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="email" type="string" null="false" indexed="unique"/>
+          <column name="name" type="string" null="false"/>
+          <column name="role" type="string" null="false" default="employee"/>
+          <column name="password_digest" type="string" null="false"/>
+          <column name="phone" type="string"/>
+          <column name="active" type="boolean" default="true"/>
+          <column name="department_id" type="bigint" foreign_key="true" indexed="true"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="email" unique="true"/>
+          <index columns="department_id"/>
+          <index columns="role"/>
+          <index columns="active"/>
+        </indexes>
+        <validations>
+          - email: presence, uniqueness, format (email regex)
+          - name: presence
+          - role: inclusion in [admin, manager, employee, hr]
+          - password: presence on create, minimum 6 characters
+        </validations>
+        <associations>
+          - belongs_to :department (optional)
+          - has_many :assignments
+          - has_many :shifts, through: :assignments
+          - has_many :created_shifts, class_name: 'Shift', foreign_key: 'creator_id'
+        </associations>
+      </table>
+
+      <!-- Departments Table -->
+      <table name="departments">
+        <purpose>Organize users and shifts by department</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="name" type="string" null="false" indexed="unique"/>
+          <column name="description" type="text"/>
+          <column name="active" type="boolean" default="true"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="name" unique="true"/>
+        </indexes>
+        <validations>
+          - name: presence, uniqueness
+        </validations>
+        <associations>
+          - has_many :users
+          - has_many :shifts
+        </associations>
+      </table>
+
+      <!-- Shifts Table -->
+      <table name="shifts">
+        <purpose>Shift definitions with time, type, capacity</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="title" type="string" null="false"/>
+          <column name="start_time" type="datetime" null="false" indexed="true"/>
+          <column name="end_time" type="datetime" null="false" indexed="true"/>
+          <column name="shift_type" type="string" null="false" indexed="true"/>
+          <column name="location" type="string"/>
+          <column name="notes" type="text"/>
+          <column name="capacity" type="integer"/>
+          <column name="department_id" type="bigint" foreign_key="true" indexed="true"/>
+          <column name="creator_id" type="bigint" foreign_key="true" indexed="true"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="start_time"/>
+          <index columns="end_time"/>
+          <index columns="shift_type"/>
+          <index columns="department_id"/>
+          <index columns="creator_id"/>
+          <index columns="[start_time, end_time]" name="idx_shifts_time_range"/>
+        </indexes>
+        <validations>
+          - title: presence
+          - start_time, end_time: presence
+          - start_time must be before end_time
+          - shift_type: inclusion in [morning, evening, night, split, flexible, on_call]
+          - capacity: numericality (greater_than 0, allow_nil)
+          - duration: between 4 and 12 hours (custom validator)
+        </validations>
+        <associations>
+          - belongs_to :department
+          - belongs_to :creator, class_name: 'User', foreign_key: 'creator_id'
+          - has_many :assignments, dependent: :destroy
+          - has_many :employees, through: :assignments, source: :employee
+        </associations>
+        <scopes>
+          - scope :upcoming, -> { where('start_time > ?', Time.current) }
+          - scope :past, -> { where('end_time < ?', Time.current) }
+          - scope :by_type, ->(type) { where(shift_type: type) }
+          - scope :in_date_range, ->(start_date, end_date) { where(start_time: start_date..end_date) }
+        </scopes>
+      </table>
+
+      <!-- Assignments Table -->
+      <table name="assignments">
+        <purpose>Link employees to shifts with status tracking</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="shift_id" type="bigint" foreign_key="true" null="false" indexed="true"/>
+          <column name="employee_id" type="bigint" foreign_key="true" null="false" indexed="true"/>
+          <column name="status" type="string" null="false" default="pending" indexed="true"/>
+          <column name="confirmed_at" type="datetime"/>
+          <column name="completed_at" type="datetime"/>
+          <column name="notes" type="text"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="shift_id"/>
+          <index columns="employee_id"/>
+          <index columns="status"/>
+          <index columns="[employee_id, shift_id]" unique="true" name="idx_unique_assignment"/>
+        </indexes>
+        <constraints>
+          <unique columns="[employee_id, shift_id]" name="unique_employee_shift"/>
+        </constraints>
+        <validations>
+          - shift: presence
+          - employee: presence
+          - status: inclusion in [pending, confirmed, declined, completed, cancelled]
+          - no_overlapping_shifts (custom validator - check employee's other shifts)
+          - shift_capacity_not_exceeded (custom validator)
+        </validations>
+        <associations>
+          - belongs_to :shift
+          - belongs_to :employee, class_name: 'User', foreign_key: 'employee_id'
+          - has_one :time_entry, dependent: :destroy
+        </associations>
+        <scopes>
+          - scope :pending, -> { where(status: 'pending') }
+          - scope :confirmed, -> { where(status: 'confirmed') }
+          - scope :completed, -> { where(status: 'completed') }
+        </scopes>
+      </table>
+
+      <!-- Shift Templates Table -->
+      <table name="shift_templates">
+        <purpose>Reusable shift patterns for quick creation</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="name" type="string" null="false"/>
+          <column name="shift_type" type="string" null="false"/>
+          <column name="duration_hours" type="integer" null="false"/>
+          <column name="default_start_time" type="time"/>
+          <column name="location" type="string"/>
+          <column name="capacity" type="integer"/>
+          <column name="department_id" type="bigint" foreign_key="true" indexed="true"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <associations>
+          - belongs_to :department
+        </associations>
+      </table>
+
+      <!-- Time Entries Table -->
+      <table name="time_entries">
+        <purpose>Track actual clock in/out times</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="assignment_id" type="bigint" foreign_key="true" null="false" indexed="true"/>
+          <column name="clock_in_time" type="datetime" null="false"/>
+          <column name="clock_out_time" type="datetime"/>
+          <column name="notes" type="text"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="assignment_id" unique="true"/>
+        </indexes>
+        <validations>
+          - assignment: presence, uniqueness
+          - clock_in_time: presence
+          - clock_out_time must be after clock_in_time (if present)
+        </validations>
+        <associations>
+          - belongs_to :assignment
+        </associations>
+      </table>
+
+      <!-- Notifications Table -->
+      <table name="notifications">
+        <purpose>In-app notifications for users</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="user_id" type="bigint" foreign_key="true" null="false" indexed="true"/>
+          <column name="title" type="string" null="false"/>
+          <column name="message" type="text" null="false"/>
+          <column name="notification_type" type="string" null="false" indexed="true"/>
+          <column name="read_at" type="datetime" indexed="true"/>
+          <column name="related_type" type="string"/>
+          <column name="related_id" type="bigint"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="user_id"/>
+          <index columns="notification_type"/>
+          <index columns="read_at"/>
+          <index columns="[related_type, related_id]"/>
+        </indexes>
+        <associations>
+          - belongs_to :user
+          - belongs_to :related, polymorphic: true, optional: true
+        </associations>
+        <scopes>
+          - scope :unread, -> { where(read_at: nil) }
+        </scopes>
+      </table>
+
+      <!-- Holidays Table -->
+      <table name="holidays">
+        <purpose>System-defined holidays for warnings and reports</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="name" type="string" null="false"/>
+          <column name="date" type="date" null="false" indexed="unique"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+        <indexes>
+          <index columns="date" unique="true"/>
+        </indexes>
+      </table>
+
+      <!-- Swap Requests Table (Phase 2) -->
+      <table name="swap_requests" phase="2">
+        <purpose>Employee-initiated shift swap requests</purpose>
+        <columns>
+          <column name="id" type="bigint" primary_key="true"/>
+          <column name="requester_id" type="bigint" foreign_key="true" null="false"/>
+          <column name="target_employee_id" type="bigint" foreign_key="true" null="false"/>
+          <column name="requester_shift_id" type="bigint" foreign_key="true" null="false"/>
+          <column name="target_shift_id" type="bigint" foreign_key="true" null="false"/>
+          <column name="status" type="string" null="false" default="proposed"/>
+          <column name="reason" type="text"/>
+          <column name="created_at" type="datetime" null="false"/>
+          <column name="updated_at" type="datetime" null="false"/>
+        </columns>
+      </table>
+
+    </database-schema>
+
+    <!-- API ENDPOINTS -->
+    <api-endpoints>
+      <namespace>/api/v1</namespace>
+      <authentication>JWT token in Authorization header: "Bearer {token}"</authentication>
+      <response-format>
+        Success: { data: {...}, meta: {...} }
+        Error: { errors: [{field: "email", message: "is invalid"}] }
+      </response-format>
+
+      <!-- Authentication -->
+      <resource name="Authentication">
+        <endpoint method="POST" path="/api/v1/auth/login">
+          <description>User login, returns JWT token</description>
+          <request_body>{ email: string, password: string }</request_body>
+          <response_success status="200">
+            { data: { token: string, user: {...} } }
+          </response_success>
+          <response_error status="401">
+            { errors: [{ message: "Invalid credentials" }] }
+          </response_error>
+        </endpoint>
+
+        <endpoint method="POST" path="/api/v1/auth/refresh">
+          <description>Refresh JWT token</description>
+          <request_header>Authorization: Bearer {old_token}</request_header>
+          <response_success status="200">
+            { data: { token: string } }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="DELETE" path="/api/v1/auth/logout">
+          <description>Logout (client-side token deletion)</description>
+          <response_success status="204">No content</response_success>
+        </endpoint>
+      </resource>
+
+      <!-- Shifts -->
+      <resource name="Shifts">
+        <endpoint method="GET" path="/api/v1/shifts">
+          <description>List shifts (paginated, filtered)</description>
+          <query_params>
+            page: integer (default 1)
+            per_page: integer (default 25, max 100)
+            shift_type: string (morning, evening, etc.)
+            start_date: date (YYYY-MM-DD)
+            end_date: date (YYYY-MM-DD)
+            department_id: integer
+          </query_params>
+          <authorization>All roles</authorization>
+          <response_success status="200">
+            {
+              data: [{ id, title, start_time, end_time, shift_type, capacity, assigned_count, ... }],
+              meta: { page: 1, per_page: 25, total: 100 }
+            }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="POST" path="/api/v1/shifts">
+          <description>Create new shift</description>
+          <authorization>Admin, Manager</authorization>
+          <request_body>
+            {
+              title: string,
+              start_time: datetime,
+              end_time: datetime,
+              shift_type: string,
+              location: string (optional),
+              notes: text (optional),
+              capacity: integer (optional),
+              department_id: integer
+            }
+          </request_body>
+          <response_success status="201">
+            { data: { id, title, ... } }
+          </response_success>
+          <response_error status="422">
+            { errors: [{ field: "start_time", message: "must be before end_time" }] }
+          </response_error>
+        </endpoint>
+
+        <endpoint method="GET" path="/api/v1/shifts/:id">
+          <description>Show shift details</description>
+          <authorization>All roles</authorization>
+          <response_success status="200">
+            {
+              data: {
+                id, title, start_time, end_time, shift_type, location, notes, capacity,
+                department: {...},
+                assignments: [{ id, employee: {...}, status }]
+              }
+            }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="PATCH" path="/api/v1/shifts/:id">
+          <description>Update shift</description>
+          <authorization>Admin, Manager (own department)</authorization>
+          <request_body>Same as POST, partial updates allowed</request_body>
+          <response_success status="200">
+            { data: { id, ... } }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="DELETE" path="/api/v1/shifts/:id">
+          <description>Delete shift (only if no confirmed assignments)</description>
+          <authorization>Admin, Manager (own department)</authorization>
+          <response_success status="204">No content</response_success>
+          <response_error status="422">
+            { errors: [{ message: "Cannot delete shift with confirmed assignments" }] }
+          </response_error>
+        </endpoint>
+      </resource>
+
+      <!-- Assignments -->
+      <resource name="Assignments">
+        <endpoint method="GET" path="/api/v1/assignments">
+          <description>List assignments (filtered by role)</description>
+          <query_params>
+            employee_id: integer (optional, admin/manager only)
+            shift_id: integer (optional)
+            status: string (pending, confirmed, etc.)
+            start_date, end_date: date range
+          </query_params>
+          <authorization>All roles (employees see only their own)</authorization>
+          <response_success status="200">
+            {
+              data: [{ id, shift: {...}, employee: {...}, status, confirmed_at }]
+            }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="POST" path="/api/v1/assignments">
+          <description>Assign employee to shift</description>
+          <authorization>Admin, Manager</authorization>
+          <request_body>
+            {
+              shift_id: integer,
+              employee_id: integer,
+              notes: text (optional)
+            }
+          </request_body>
+          <response_success status="201">
+            { data: { id, shift, employee, status: "pending" } }
+          </response_success>
+          <response_error status="422">
+            { errors: [{ message: "Employee has overlapping shift" }] }
+          </response_error>
+        </endpoint>
+
+        <endpoint method="PATCH" path="/api/v1/assignments/:id">
+          <description>Update assignment (confirm/decline)</description>
+          <authorization>Employee (own assignment), Manager, Admin</authorization>
+          <request_body>
+            {
+              status: string (confirmed, declined),
+              notes: text (optional)
+            }
+          </request_body>
+          <response_success status="200">
+            { data: { id, status, confirmed_at } }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="DELETE" path="/api/v1/assignments/:id">
+          <description>Unassign employee from shift</description>
+          <authorization>Admin, Manager</authorization>
+          <response_success status="204">No content</response_success>
+        </endpoint>
+      </resource>
+
+      <!-- Users -->
+      <resource name="Users">
+        <endpoint method="GET" path="/api/v1/users">
+          <description>List users</description>
+          <authorization>Admin, Manager (department only), HR</authorization>
+          <response_success status="200">
+            { data: [{ id, name, email, role, department }] }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="POST" path="/api/v1/users">
+          <description>Create user</description>
+          <authorization>Admin</authorization>
+          <request_body>
+            { name, email, password, role, department_id }
+          </request_body>
+          <response_success status="201">
+            { data: { id, name, email, role } }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="GET" path="/api/v1/users/:id">
+          <description>Show user profile</description>
+          <authorization>All roles (own profile), Admin, Manager, HR</authorization>
+        </endpoint>
+
+        <endpoint method="PATCH" path="/api/v1/users/:id">
+          <description>Update user</description>
+          <authorization>User (own profile), Admin</authorization>
+        </endpoint>
+      </resource>
+
+      <!-- Reports -->
+      <resource name="Reports">
+        <endpoint method="GET" path="/api/v1/reports/employee/:id">
+          <description>Employee hours report</description>
+          <query_params>start_date, end_date</query_params>
+          <authorization>Employee (own), Manager, HR, Admin</authorization>
+          <response_success status="200">
+            {
+              data: {
+                employee: {...},
+                total_hours: 160.5,
+                regular_hours: 140,
+                overtime_hours: 20.5,
+                shifts_count: 18
+              }
+            }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="GET" path="/api/v1/reports/department/:id">
+          <description>Department coverage report</description>
+          <query_params>start_date, end_date</query_params>
+          <authorization>Manager (own dept), HR, Admin</authorization>
+        </endpoint>
+
+        <endpoint method="GET" path="/api/v1/reports/overtime">
+          <description>System-wide overtime report</description>
+          <authorization>HR, Admin</authorization>
+        </endpoint>
+      </resource>
+
+      <!-- Notifications -->
+      <resource name="Notifications">
+        <endpoint method="GET" path="/api/v1/notifications">
+          <description>List user notifications</description>
+          <authorization>All roles (own notifications)</authorization>
+          <response_success status="200">
+            {
+              data: [{ id, title, message, notification_type, read_at, created_at }],
+              meta: { unread_count: 5 }
+            }
+          </response_success>
+        </endpoint>
+
+        <endpoint method="PATCH" path="/api/v1/notifications/:id/read">
+          <description>Mark notification as read</description>
+          <authorization>Owner</authorization>
+        </endpoint>
+      </resource>
+
+      <!-- Departments -->
+      <resource name="Departments">
+        <endpoint method="GET" path="/api/v1/departments">
+          <description>List departments</description>
+          <authorization>All roles</authorization>
+        </endpoint>
+
+        <endpoint method="POST" path="/api/v1/departments">
+          <description>Create department</description>
+          <authorization>Admin</authorization>
+        </endpoint>
+      </resource>
+
+    </api-endpoints>
+
+    <!-- GEMS -->
+    <critical-gems>
+      <gem name="rails" version="~> 8.1.0">Web framework</gem>
+      <gem name="pg" version="~> 1.6.2">PostgreSQL adapter</gem>
+      <gem name="puma" version="~> 6.4">Web server</gem>
+      <gem name="bcrypt" version="~> 3.1.20">Password hashing (has_secure_password)</gem>
+      <gem name="jwt" version="~> 3.1.2">JSON Web Tokens</gem>
+      <gem name="rack-cors" version="~> 2.0">CORS configuration</gem>
+      <gem name="kaminari" version="~> 1.2">Pagination</gem>
+
+      <gem name="solid_cache" version="~> 1.0">PostgreSQL-backed cache</gem>
+      <gem name="solid_queue" version="~> 1.0">Background jobs</gem>
+      <gem name="solid_cable" version="~> 1.0">WebSockets (future)</gem>
+
+      <gem name="rspec-rails" version="~> 7.0" group="test">Testing framework</gem>
+      <gem name="factory_bot_rails" version="~> 6.4" group="test">Test factories</gem>
+      <gem name="faker" version="~> 3.5" group="development,test">Fake data</gem>
+      <gem name="simplecov" version="~> 0.22" group="test">Coverage reporting</gem>
+
+      <gem name="rubocop-rails" version="~> 2.26" group="development">Code linter</gem>
+      <gem name="bullet" version="~> 7.2" group="development">N+1 query detection</gem>
+      <gem name="brakeman" version="~> 6.2" group="development">Security scanner</gem>
+    </critical-gems>
+
+    <!-- CONFIGURATION FILES -->
+    <configuration-files>
+
+      <file name="config/database.yml">
+        <content>
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("DB_POOL") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: vardiyapro_development
+  username: <%= ENV.fetch("DATABASE_USER") { "postgres" } %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") { "postgres" } %>
+  host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
+
+test:
+  <<: *default
+  database: vardiyapro_test
+  username: <%= ENV.fetch("DATABASE_USER") { "postgres" } %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") { "postgres" } %>
+
+production:
+  <<: *default
+  database: vardiyapro_production
+  username: <%= ENV.fetch("DATABASE_USER") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") %>
+  host: <%= ENV.fetch("DATABASE_HOST") %>
+        </content>
+      </file>
+
+      <file name="config/initializers/jwt.rb">
+        <content>
+Rails.application.config.jwt_secret = ENV.fetch('JWT_SECRET') do
+  if Rails.env.production?
+    raise "JWT_SECRET environment variable must be set in production"
+  else
+    Rails.application.secret_key_base
+  end
+end
+
+Rails.application.config.jwt_expiry = ENV.fetch('JWT_EXPIRY_HOURS') { 24 }.to_i.hours
+        </content>
+      </file>
+
+      <file name="config/initializers/cors.rb">
+        <content>
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins Rails.env.production? ? ENV.fetch('FRONTEND_URL') : '*'
+
+    resource '/api/*',
+      headers: :any,
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
+      max_age: 86400
+  end
+end
+        </content>
+      </file>
+
+      <file name=".env.example">
+        <content>
+# Database
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_HOST=localhost
+DB_POOL=5
+
+# JWT
+JWT_SECRET=your_secret_key_here_change_in_production
+JWT_EXPIRY_HOURS=24
+
+# Rails
+RAILS_ENV=development
+RAILS_MAX_THREADS=5
+
+# CORS (Production)
+FRONTEND_URL=https://vardiyapro.com
+
+# Email (if using SMTP)
+SMTP_ADDRESS=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@example.com
+SMTP_PASSWORD=your_app_password
+        </content>
+      </file>
+
+      <file name="Procfile">
+        <content>
+web: bundle exec puma -C config/puma.rb
+worker: bundle exec rails solid_queue:start
+        </content>
+      </file>
+
+    </configuration-files>
+
+    <!-- SCALE PLATFORM LESSONS -->
+    <scale-platform-lessons>
+
+      <lesson id="ruby-version-lock">
+        <problem>Ruby version mismatch between dev and production</problem>
+        <solution>
+          Create .ruby-version file with "3.3.9"
+          Add to Gemfile: ruby "3.3.9"
+        </solution>
+        <implementation>
+          echo "3.3.9" > .ruby-version
+        </implementation>
+      </lesson>
+
+      <lesson id="env-variables">
+        <problem>Hardcoded passwords in database.yml committed to git</problem>
+        <solution>
+          Use ENV.fetch for all secrets
+          Add .env to .gitignore
+          Provide .env.example for documentation
+        </solution>
+        <critical>NEVER commit .env file</critical>
+      </lesson>
+
+      <lesson id="solid-gems-migrations">
+        <problem>Forgot to run Solid gems migrations, app crashes on boot</problem>
+        <solution>
+          After adding solid_* gems, immediately run:
+          rails solid_cache:install:migrations
+          rails solid_queue:install:migrations
+          rails solid_cable:install:migrations
+          rails db:migrate
+        </solution>
+        <reminder>Add this to Phase 1 Task 1.3</reminder>
+      </lesson>
+
+      <lesson id="jwt-configuration">
+        <problem>JWT secret not configured, tokens fail to decode</problem>
+        <solution>
+          Create config/initializers/jwt.rb
+          Use ENV['JWT_SECRET'] in production
+          Fall back to secret_key_base in development
+        </solution>
+      </lesson>
+
+      <lesson id="cors-security">
+        <problem>CORS allows '*' in production, security risk</problem>
+        <solution>
+          Development: origins '*' (allow all)
+          Production: origins ENV['FRONTEND_URL'] (specific domain only)
+        </solution>
+      </lesson>
+
+      <lesson id="pg-gem-compilation">
+        <problem>pg gem fails to install (missing PostgreSQL headers)</problem>
+        <solution>
+          macOS: brew install postgresql@15
+          Ubuntu: sudo apt-get install libpq-dev
+          Then: bundle install
+        </solution>
+      </lesson>
+
+      <lesson id="n-plus-one">
+        <problem>GET /api/v1/shifts loads 100 shifts + 100 queries for departments</problem>
+        <solution>
+          Add Bullet gem in development
+          Use includes(:department, :assignments) in controller
+          Test with realistic data (100+ records)
+        </solution>
+      </lesson>
+
+      <lesson id="password-validation">
+        <problem>User model requires password on update, breaks profile edits</problem>
+        <solution>
+          Add to User model:
+          has_secure_password validations: false
+          validates :password, length: { minimum: 6 }, if: :password_digest_changed?
+        </solution>
+      </lesson>
+
+      <lesson id="test-database-cleanup">
+        <problem>Tests fail due to leftover data from previous runs</problem>
+        <solution>
+          Add database_cleaner gem
+          Configure RSpec to use transaction strategy
+        </solution>
+      </lesson>
+
+    </scale-platform-lessons>
+
+    <!-- ARCHITECTURE DECISIONS -->
+    <architecture-decisions>
+
+      <decision id="service-objects">
+        <question>When to use Service Objects vs fat controllers?</question>
+        <answer>
+          Use Service Objects when:
+          - Controller action has >15 lines of business logic
+          - Multi-step operation (create shift + send notifications)
+          - Transaction required (swap shifts atomically)
+          - Logic needs testing in isolation
+
+          Examples:
+          - Shifts::CreateService (create shift + notify manager if understaffed)
+          - Assignments::ConfirmService (confirm assignment + send notification + update shift count)
+          - Assignments::ValidateOverlapService (complex overlap detection logic)
+        </answer>
+      </decision>
+
+      <decision id="authorization">
+        <question>Pundit vs CanCanCan vs manual?</question>
+        <answer>
+          Use Pundit for clarity and testability:
+          - ShiftPolicy: can create/edit/delete based on role and department
+          - AssignmentPolicy: can confirm own assignments, managers can create any
+          - Explicit policy classes easier to test than CanCanCan abilities
+        </answer>
+      </decision>
+
+      <decision id="serialization">
+        <question>Jbuilder vs ActiveModel::Serializers vs custom?</question>
+        <answer>
+          Use Jbuilder (Rails default):
+          - Familiar to Rails developers
+          - Flexible for complex nested responses
+          - Good performance with caching
+          - Example: app/views/api/v1/shifts/show.json.jbuilder
+        </answer>
+      </decision>
+
+      <decision id="background-jobs">
+        <question>Which jobs need Solid Queue?</question>
+        <answer>
+          Async jobs:
+          - Shift reminders (scheduled 1 hour before start_time)
+          - Email notifications (non-blocking)
+          - Large report generation (employee report for 1 year)
+          - Overtime alerts (nightly cron job to check all employees)
+        </answer>
+      </decision>
+
+      <decision id="caching">
+        <question>What to cache with Solid Cache?</question>
+        <answer>
+          Cache:
+          - GET /api/v1/shifts list (5 min expiry, invalidate on create/update/delete)
+          - User permissions (role-based, 1 hour expiry)
+          - Department list (rarely changes, 24 hour expiry)
+          - Reports (1 hour expiry, expensive queries)
+
+          Don't cache:
+          - Assignment status (changes frequently)
+          - Notifications (real-time)
+        </answer>
+      </decision>
+
+    </architecture-decisions>
+
+  </technical-plan>
+
+  <!-- SUMMARY -->
+  <summary>
+    <database-tables>8 core tables: users, departments, shifts, assignments, shift_templates, time_entries, notifications, holidays</database-tables>
+    <api-endpoints>~30 endpoints across 7 resources (Auth, Shifts, Assignments, Users, Reports, Notifications, Departments)</api-endpoints>
+    <critical-gems>15 essential gems: Rails 8.1, PostgreSQL, JWT, Solid Stack, RSpec, Kaminari, Pundit, Bullet</critical-gems>
+    <configuration-files>5 config files: database.yml, jwt.rb, cors.rb, .env.example, Procfile</configuration-files>
+    <scale-platform-lessons>9 key lessons to avoid common pitfalls</scale-platform-lessons>
+
+    <next-phase>
+      Technical Plan defines HOW to build VardiyaPro.
+      Next: Tasks Breakdown - split this plan into actionable implementation steps.
+    </next-phase>
+  </summary>
+
+</poml>

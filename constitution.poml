@@ -1,0 +1,602 @@
+<poml>
+  <role>Technical Constitution Architect for VardiyaPro</role>
+  <task>Establish immutable project principles and governance rules</task>
+
+  <constitution>
+    <metadata>
+      <project>VardiyaPro - Shift Tracking System</project>
+      <framework>Ruby on Rails 8.1.0</framework>
+      <language>Ruby 3.3.9</language>
+      <database>PostgreSQL 15</database>
+      <methodology>Spec-Driven Development + POML</methodology>
+      <reference>https://github.com/Srhot/scale-platform</reference>
+      <created>2025-11-07</created>
+    </metadata>
+
+    <!-- ARTICLE 1: SECURITY -->
+    <article id="security" priority="critical">
+      <title>Security Architecture</title>
+
+      <principle id="sec-001">
+        <name>Authentication</name>
+        <rule>JWT-based authentication for all API endpoints</rule>
+        <implementation>
+          - bcrypt gem for password hashing (cost factor: 12)
+          - jwt gem for token generation and validation
+          - Token expiry: 24 hours (configurable via ENV)
+          - Refresh token mechanism for mobile clients
+        </implementation>
+        <enforcement>Mandatory - No exceptions</enforcement>
+      </principle>
+
+      <principle id="sec-002">
+        <name>HTTPS Enforcement</name>
+        <rule>Production MUST use HTTPS only</rule>
+        <implementation>
+          - Development: HTTP allowed (localhost)
+          - Production: force_ssl = true in config
+          - HSTS headers enabled
+        </implementation>
+        <enforcement>Critical in production</enforcement>
+      </principle>
+
+      <principle id="sec-003">
+        <name>Sensitive Data Protection</name>
+        <rule>Never commit secrets, use environment variables</rule>
+        <implementation>
+          - .env in .gitignore
+          - .env.example with placeholder values
+          - Rails credentials for production secrets
+          - JWT_SECRET in ENV (production mandatory)
+        </implementation>
+        <enforcement>Mandatory - Auto-reject commits with .env</enforcement>
+      </principle>
+
+      <principle id="sec-004">
+        <name>Password Policy</name>
+        <rule>Minimum security requirements for user passwords</rule>
+        <implementation>
+          - Minimum length: 6 characters (pragmatic for development)
+          - bcrypt automatic salting and hashing
+          - No plaintext passwords in logs or responses
+        </implementation>
+        <enforcement>Enforced at model validation level</enforcement>
+      </principle>
+
+      <principle id="sec-005">
+        <name>Authorization</name>
+        <rule>Role-based access control (RBAC)</rule>
+        <implementation>
+          - Roles: admin, manager, employee, hr
+          - Pundit or CanCanCan for authorization
+          - Every controller action checks permissions
+        </implementation>
+        <enforcement>Mandatory - No public admin endpoints</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 2: TESTING -->
+    <article id="testing" priority="high">
+      <title>Test Strategy and Coverage</title>
+
+      <principle id="test-001">
+        <name>Test Framework</name>
+        <rule>RSpec for unit and integration tests</rule>
+        <implementation>
+          - rspec-rails gem
+          - FactoryBot for test data
+          - Faker for realistic fake data
+          - Database Cleaner for test isolation
+        </implementation>
+        <enforcement>Required for all new features</enforcement>
+      </principle>
+
+      <principle id="test-002">
+        <name>Test Coverage</name>
+        <rule>Minimum 70% code coverage</rule>
+        <implementation>
+          - SimpleCov gem for coverage reporting
+          - Unit tests: Models, Services, Helpers
+          - Integration tests: API requests, authentication
+          - Edge cases and error scenarios covered
+        </implementation>
+        <enforcement>Coverage report in CI (or manual check)</enforcement>
+      </principle>
+
+      <principle id="test-003">
+        <name>Test Pyramid</name>
+        <rule>Balanced test distribution</rule>
+        <implementation>
+          - 60% Unit tests (models, services, business logic)
+          - 30% Integration tests (API endpoints, request specs)
+          - 10% E2E tests (Playwright, critical user flows)
+        </implementation>
+        <enforcement>Guideline - Adjust as needed</enforcement>
+      </principle>
+
+      <principle id="test-004">
+        <name>API Testing</name>
+        <rule>Postman + Newman for API validation</rule>
+        <implementation>
+          - Postman collection for all endpoints
+          - Newman CLI for automated runs
+          - Pre-request scripts for JWT token injection
+          - Assertions for status codes, response schema
+        </implementation>
+        <enforcement>Required before production deploy</enforcement>
+      </principle>
+
+      <principle id="test-005">
+        <name>E2E Testing</name>
+        <rule>Playwright for critical user journeys</rule>
+        <implementation>
+          - BDD style (Given/When/Then)
+          - Test scenarios: Login, Shift creation, Assignment flow
+          - Run on staging before production
+        </implementation>
+        <enforcement>Final phase requirement</enforcement>
+      </principle>
+
+      <principle id="test-006">
+        <name>Commit Quality</name>
+        <rule>Tests must pass before merging to main</rule>
+        <implementation>
+          - Run rspec locally before git push
+          - Optional: GitHub Actions CI (auto-run tests)
+          - No force-push to main with failing tests
+        </implementation>
+        <enforcement>Developer discipline + CI (if enabled)</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 3: ARCHITECTURE -->
+    <article id="architecture" priority="high">
+      <title>Architectural Principles</title>
+
+      <principle id="arch-001">
+        <name>Application Type</name>
+        <rule>Full-stack Rails application (Views + API)</rule>
+        <implementation>
+          - Frontend: Rails Views (ERB/Hotwire) OR separate React/Vue
+          - Backend: RESTful API under /api/v1 namespace
+          - API versioning for breaking changes
+        </implementation>
+        <enforcement>Monolithic architecture</enforcement>
+      </principle>
+
+      <principle id="arch-002">
+        <name>SOLID Principles</name>
+        <rule>Pragmatic SOLID - strict where it matters</rule>
+        <implementation>
+          - Single Responsibility: Service Objects for complex logic
+          - Open/Closed: Use inheritance and modules wisely
+          - Dependency Inversion: Inject dependencies in services
+          - Don't over-engineer simple CRUD operations
+        </implementation>
+        <enforcement>Guideline - Code review validation</enforcement>
+      </principle>
+
+      <principle id="arch-003">
+        <name>Service Objects Pattern</name>
+        <rule>Extract complex business logic to service objects</rule>
+        <implementation>
+          - Use when controller action has >15 lines of logic
+          - Location: app/services/{domain}/{action}_service.rb
+          - Example: Shifts::CreateService, Assignments::ConfirmService
+          - Return Result objects (success/failure pattern)
+        </implementation>
+        <enforcement>Required for multi-step operations</enforcement>
+      </principle>
+
+      <principle id="arch-004">
+        <name>MVC Boundaries</name>
+        <rule>Respect Model-View-Controller separation</rule>
+        <implementation>
+          - Models: Data logic, validations, associations
+          - Controllers: Request handling, params, response formatting
+          - Views: Presentation (if using Rails views)
+          - No business logic in controllers or views
+        </implementation>
+        <enforcement>Mandatory - RuboCop checks</enforcement>
+      </principle>
+
+      <principle id="arch-005">
+        <name>Reference Architecture</name>
+        <rule>Follow Scale Platform patterns</rule>
+        <implementation>
+          - Solid Stack (Cache, Queue, Cable) for Rails 8 features
+          - JWT authentication pattern
+          - API versioning structure
+          - Service object conventions
+        </implementation>
+        <enforcement>Align with proven patterns</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 4: PERFORMANCE -->
+    <article id="performance" priority="high">
+      <title>Performance Standards</title>
+
+      <principle id="perf-001">
+        <name>Response Time</name>
+        <rule>API endpoints must respond in under 200ms (average)</rule>
+        <implementation>
+          - Monitor with Rails logging (Lograge gem)
+          - Optimize database queries (explain analyze)
+          - Use indexes on foreign keys and search columns
+        </implementation>
+        <enforcement>Performance testing before production</enforcement>
+      </principle>
+
+      <principle id="perf-002">
+        <name>Caching Strategy</name>
+        <rule>Solid Cache for Rails 8 caching</rule>
+        <implementation>
+          - PostgreSQL-backed cache (Solid Cache)
+          - Fragment caching for repeated views
+          - Low-level caching for expensive computations
+          - Cache expiry: 1 hour default, configurable
+        </implementation>
+        <enforcement>Required for list endpoints</enforcement>
+      </principle>
+
+      <principle id="perf-003">
+        <name>Query Optimization</name>
+        <rule>No N+1 queries in production</rule>
+        <implementation>
+          - Use includes/preload/eager_load for associations
+          - Bullet gem in development (detect N+1)
+          - Database query limit: <10 per request
+          - Use select() to fetch only needed columns
+        </implementation>
+        <enforcement>Mandatory - Bullet gem warnings must be fixed</enforcement>
+      </principle>
+
+      <principle id="perf-004">
+        <name>Pagination</name>
+        <rule>All list endpoints must paginate</rule>
+        <implementation>
+          - Kaminari or Pagy gem
+          - Default: 25 records per page
+          - Max: 100 records per page
+          - Return pagination metadata in response
+        </implementation>
+        <enforcement>Mandatory for collections</enforcement>
+      </principle>
+
+      <principle id="perf-005">
+        <name>Database Connection Pool</name>
+        <rule>Optimize connection pool size</rule>
+        <implementation>
+          - Development: pool = 5
+          - Production: pool = ENV.fetch("DB_POOL") { 20 }
+          - Timeout: 5000ms
+        </implementation>
+        <enforcement>Configured in database.yml</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 5: CODE QUALITY -->
+    <article id="code-quality" priority="medium">
+      <title>Code Quality Standards</title>
+
+      <principle id="qual-001">
+        <name>Code Style Linter</name>
+        <rule>RuboCop with Rails Omakase configuration</rule>
+        <implementation>
+          - Rails 8 default RuboCop setup
+          - Flexible rules, not overly strict
+          - Auto-correct minor issues: rubocop -A
+          - Disable specific cops if blocking progress
+        </implementation>
+        <enforcement>Run before commits, not blocking</enforcement>
+      </principle>
+
+      <principle id="qual-002">
+        <name>Code Review</name>
+        <rule>Self-review required, peer-review optional</rule>
+        <implementation>
+          - Review own diff before committing
+          - Check for hardcoded secrets, debug code
+          - Solo developer: self-review sufficient
+          - Team: PR reviews before merge
+        </implementation>
+        <enforcement>Developer discipline</enforcement>
+      </principle>
+
+      <principle id="qual-003">
+        <name>Documentation</name>
+        <rule>Self-documenting code + comments for complex logic</rule>
+        <implementation>
+          - Clear method names, no cryptic abbreviations
+          - YARD comments for public APIs (optional)
+          - README: Setup, test, deploy instructions
+          - Inline comments for non-obvious algorithms
+        </implementation>
+        <enforcement>Required for README, optional for code</enforcement>
+      </principle>
+
+      <principle id="qual-004">
+        <name>Error Handling</name>
+        <rule>Graceful error responses with proper HTTP codes</rule>
+        <implementation>
+          - 200: Success
+          - 201: Created
+          - 400: Bad Request (validation errors)
+          - 401: Unauthorized (missing/invalid token)
+          - 403: Forbidden (insufficient permissions)
+          - 404: Not Found
+          - 500: Internal Server Error (log details, return generic message)
+        </implementation>
+        <enforcement>Mandatory for all API endpoints</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 6: DEPLOYMENT -->
+    <article id="deployment" priority="medium">
+      <title>Deployment Strategy</title>
+
+      <principle id="deploy-001">
+        <name>Deployment Platform</name>
+        <rule>Heroku/Render/Fly.io ready (no Docker required)</rule>
+        <implementation>
+          - Procfile for process types
+          - web: bundle exec puma -C config/puma.rb
+          - worker: bundle exec rails solid_queue:start (if background jobs)
+          - .env.example for required ENV variables
+        </implementation>
+        <enforcement>Production-ready configuration</enforcement>
+      </principle>
+
+      <principle id="deploy-002">
+        <name>Environment Configuration</name>
+        <rule>12-factor app principles for config</rule>
+        <implementation>
+          - All secrets in ENV variables
+          - Development: .env file (gitignored)
+          - Production: Platform ENV settings (Heroku Config Vars)
+          - Required vars: DATABASE_URL, JWT_SECRET, RAILS_ENV
+        </implementation>
+        <enforcement>Mandatory - No hardcoded production secrets</enforcement>
+      </principle>
+
+      <principle id="deploy-003">
+        <name>Development Workflow</name>
+        <rule>GitHub Code → VSCode → Production</rule>
+        <implementation>
+          - Develop in GitHub Code (browser IDE)
+          - Clone to VSCode for local testing
+          - Push to main → Deploy to production
+          - No Docker containers needed
+        </implementation>
+        <enforcement>Streamlined workflow</enforcement>
+      </principle>
+
+      <principle id="deploy-004">
+        <name>CI/CD Pipeline (Optional)</name>
+        <rule>GitHub Actions for automated testing</rule>
+        <implementation>
+          - On push to main: Run rspec
+          - Optional: Auto-deploy to staging on success
+          - Manual approval for production deploy
+        </implementation>
+        <enforcement>Nice-to-have, not mandatory</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 7: DATABASE -->
+    <article id="database" priority="high">
+      <title>Database Management</title>
+
+      <principle id="db-001">
+        <name>Database Version</name>
+        <rule>PostgreSQL 15.x</rule>
+        <implementation>
+          - Development: PostgreSQL 15 via Homebrew/apt
+          - Production: Managed PostgreSQL (Heroku Postgres, Render DB)
+          - Compatibility: Rails 8 + pg gem ~> 1.6
+        </implementation>
+        <enforcement>Fixed version for consistency</enforcement>
+      </principle>
+
+      <principle id="db-002">
+        <name>Migration Strategy</name>
+        <rule>Reversible migrations with rollback support</rule>
+        <implementation>
+          - Use change method (auto-reversible)
+          - Complex changes: up/down methods
+          - Test rollback: rails db:rollback STEP=1
+          - Never edit old migrations (create new ones)
+        </implementation>
+        <enforcement>Mandatory - Production safety</enforcement>
+      </principle>
+
+      <principle id="db-003">
+        <name>Seed Data</name>
+        <rule>Development seed data for testing</rule>
+        <implementation>
+          - db/seeds.rb with FactoryBot + Faker
+          - Admin user, sample departments, shifts, assignments
+          - Idempotent: safe to run multiple times
+          - Command: rails db:seed
+        </implementation>
+        <enforcement>Required for development environment</enforcement>
+      </principle>
+
+      <principle id="db-004">
+        <name>Backup Policy</name>
+        <rule>Production database backups automated</rule>
+        <implementation>
+          - Heroku: Automatic daily backups (PG Backups addon)
+          - Render: Point-in-time recovery
+          - Manual backup: pg_dump for critical changes
+          - Backup retention: 7 days minimum
+        </implementation>
+        <enforcement>Production requirement</enforcement>
+      </principle>
+
+      <principle id="db-005">
+        <name>Data Integrity</name>
+        <rule>Foreign keys, unique constraints, indexes</rule>
+        <implementation>
+          - Foreign keys with ON DELETE CASCADE/RESTRICT
+          - Unique indexes on email, assignment pairs
+          - Composite indexes for filtered queries
+          - NOT NULL constraints on required fields
+        </implementation>
+        <enforcement>Mandatory at migration level</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 8: DOCUMENTATION -->
+    <article id="documentation" priority="medium">
+      <title>Documentation Requirements</title>
+
+      <principle id="doc-001">
+        <name>README Maintenance</name>
+        <rule>README.md must always be current</rule>
+        <implementation>
+          - Project overview and tech stack
+          - Setup instructions (prerequisites, installation)
+          - Running tests
+          - Deployment guide
+          - Troubleshooting common issues
+        </implementation>
+        <enforcement>Update with each major change</enforcement>
+      </principle>
+
+      <principle id="doc-002">
+        <name>API Documentation</name>
+        <rule>Postman collection as API documentation</rule>
+        <implementation>
+          - VardiyaPro.postman_collection.json
+          - Organized by resource (Auth, Shifts, Assignments)
+          - Example requests with sample data
+          - Environment variables for base URL, tokens
+        </implementation>
+        <enforcement>Required before production</enforcement>
+      </principle>
+
+      <principle id="doc-003">
+        <name>Changelog</name>
+        <rule>Track major changes in CHANGELOG.md</rule>
+        <implementation>
+          - Phases completed
+          - Features added
+          - Breaking changes
+          - Bug fixes
+        </implementation>
+        <enforcement>Update at each phase completion</enforcement>
+      </principle>
+
+      <principle id="doc-004">
+        <name>Environment Variables</name>
+        <rule>.env.example with all required variables</rule>
+        <implementation>
+          - Placeholder values (not real secrets)
+          - Comments explaining each variable
+          - Required vs optional marked
+        </implementation>
+        <enforcement>Mandatory for onboarding</enforcement>
+      </principle>
+    </article>
+
+    <!-- ARTICLE 9: IMMUTABLE CONSTRAINTS -->
+    <article id="immutable-constraints" priority="critical">
+      <title>The Immutables - Never Break These Rules</title>
+
+      <constraint id="imm-001" severity="critical">
+        <rule>🔒 Security First: Never commit sensitive data</rule>
+        <details>
+          - .env file MUST be in .gitignore
+          - No passwords, API keys, secrets in code
+          - JWT_SECRET in ENV only, never hardcoded
+          - Immediately revoke if secret leaked
+        </details>
+        <violation-consequence>Security breach - Repository cleanup required</violation-consequence>
+      </constraint>
+
+      <constraint id="imm-002" severity="critical">
+        <rule>🧪 No Broken Main: Tests must pass before merge</rule>
+        <details>
+          - Run rspec before pushing to main branch
+          - Failing tests = do not merge
+          - Fix or skip (pending) broken tests, don't ignore
+          - Production deploys only from passing builds
+        </details>
+        <violation-consequence>Production downtime risk</violation-consequence>
+      </constraint>
+
+      <constraint id="imm-003" severity="critical">
+        <rule>📊 Data Integrity: Never directly manipulate production database</rule>
+        <details>
+          - Use migrations for schema changes
+          - Use rails console for data fixes (with caution)
+          - No direct SQL in production DB without backup
+          - Always test migrations on staging first
+        </details>
+        <violation-consequence>Data loss or corruption</violation-consequence>
+      </constraint>
+
+      <constraint id="imm-004" severity="high">
+        <rule>🎯 Breaking Changes: API versioning mandatory</rule>
+        <details>
+          - Breaking change = new API version (/api/v2/)
+          - Deprecate old version with 6-month notice
+          - Never break existing client contracts
+          - Document all API changes in Postman + CHANGELOG
+        </details>
+        <violation-consequence>Client applications break</violation-consequence>
+      </constraint>
+
+      <constraint id="imm-005" severity="high">
+        <rule>🚫 Query Performance: No N+1 queries in production</rule>
+        <details>
+          - Bullet gem must not raise alerts
+          - Use includes/preload for associations
+          - Test with production-like data volume
+          - Fix N+1 before deploying
+        </details>
+        <violation-consequence>Performance degradation, user complaints</violation-consequence>
+      </constraint>
+
+      <constraint id="imm-006" severity="high">
+        <rule>📖 Documentation Parity: README matches reality</rule>
+        <details>
+          - Update README when setup steps change
+          - All ENV variables in .env.example
+          - Postman collection reflects current API
+          - Outdated docs worse than no docs
+        </details>
+        <violation-consequence>Developer onboarding friction, support burden</violation-consequence>
+      </constraint>
+    </article>
+
+    <!-- SUMMARY -->
+    <summary>
+      <governance>
+        This constitution establishes the foundational principles for VardiyaPro development.
+        All architectural decisions, code changes, and deployments MUST comply with these articles.
+
+        Priority levels:
+        - CRITICAL: Non-negotiable, auto-reject violations
+        - HIGH: Required unless exceptional circumstances
+        - MEDIUM: Strong guideline, deviations documented
+
+        The Immutables (Article 9) are NEVER violated under any circumstances.
+      </governance>
+
+      <enforcement>
+        - Code reviews check constitutional compliance
+        - RuboCop, Bullet, Brakeman enforce rules automatically
+        - Manual review for architectural principles
+        - Constitution updated only with explicit approval
+      </enforcement>
+
+      <living-document>
+        This constitution may evolve as project needs change, but The Immutables remain fixed.
+        All changes require stakeholder approval and must be tracked in constitution.poml history.
+      </living-document>
+    </summary>
+  </constitution>
+</poml>

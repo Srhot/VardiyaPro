@@ -1,0 +1,65 @@
+# See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
+
+# Ignore git directory.
+/.git/
+/.gitignore
+
+# Ignore bundler config.
+/.bundle
+
+# Ignore all environment files (except templates).
+/.env*
+!/.env.example
+
+# Ignore all logfiles and tempfiles.
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+
+# Ignore pidfiles, but keep the directory.
+/tmp/pids/*
+!/tmp/pids/
+!/tmp/pids/.keep
+
+# Ignore storage (uploaded files in development and any SQLite databases).
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
+
+# Ignore development/test databases
+/db/*.sqlite3
+/db/*.sqlite3-*
+
+# Ignore coverage reports
+/coverage
+
+# Ignore RSpec examples file
+/spec/examples.txt
+
+# Ignore node_modules (if using any JS)
+/node_modules
+
+# Ignore yarn files
+/yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+
+# Ignore master key for decrypting credentials
+/config/master.key
+/config/credentials/*.key
+
+# Ignore Docker files
+/.dockerignore
+/Dockerfile*
+/docker-compose*.yml
+
+# Ignore CI/CD files
+/.github
+
+# Ignore documentation
+/README.md
+/SETUP.md
+*.md
