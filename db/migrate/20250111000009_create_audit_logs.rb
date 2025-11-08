@@ -23,8 +23,8 @@ class CreateAuditLogs < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
+    # Note: user_id index is automatically created by t.references above
     add_index :audit_logs, %i[auditable_type auditable_id]
-    add_index :audit_logs, :user_id
     add_index :audit_logs, :action
     add_index :audit_logs, :created_at
   end
