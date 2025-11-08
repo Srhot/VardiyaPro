@@ -35,8 +35,8 @@ npm install -g newman-reporter-htmlextra
 npm run test:api
 
 # Veya doğrudan newman ile
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json
 ```
 
 ### HTML Raporu Oluştur
@@ -45,7 +45,7 @@ newman run postman/VardiyaPro_API_Collection_v2.json \
 # HTML raporu ile çalıştır
 npm run test:api:html
 
-# Rapor: postman/reports/test-report.html
+# Rapor: test/postman/reports/test-report.html
 ```
 
 ### JSON Raporu Oluştur
@@ -54,7 +54,7 @@ npm run test:api:html
 # JSON raporu ile çalıştır
 npm run test:api:json
 
-# Rapor: postman/reports/test-report.json
+# Rapor: test/postman/reports/test-report.json
 ```
 
 ### Tüm Raporları Oluştur
@@ -161,40 +161,40 @@ pm.test('Actual matches expected structure', function () {
 ### Spesifik Klasör Çalıştır
 
 ```bash
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json \
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json \
   --folder "Authentication"
 ```
 
 ### Iteration Count (Çoklu Çalıştırma)
 
 ```bash
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json \
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json \
   -n 5  # 5 kez çalıştır
 ```
 
 ### Delay Ekle (Rate Limiting)
 
 ```bash
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json \
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json \
   --delay-request 1000  # Her istek arası 1 saniye bekle
 ```
 
 ### Timeout Ayarla
 
 ```bash
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json \
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json \
   --timeout-request 10000  # 10 saniye timeout
 ```
 
 ### Environment Variables Override
 
 ```bash
-newman run postman/VardiyaPro_API_Collection_v2.json \
-  -e postman/VardiyaPro_Environment_Dev.json \
+newman run test/postman/collections/VardiyaPro_API_Collection_v2.json \
+  -e test/postman/environments/VardiyaPro_Environment_Dev.json \
   --env-var "base_url=http://production-server.com/api/v1"
 ```
 
@@ -210,15 +210,15 @@ HTML raporu şunları içerir:
 - ✅ Console log'lar
 - ✅ Error stack traces (varsa)
 
-**Rapor Konumu:** `postman/reports/test-report.html`
+**Rapor Konumu:** `test/postman/reports/test-report.html`
 
 Tarayıcıda açmak için:
 ```bash
 # Windows
-start postman/reports/test-report.html
+start test/postman/reports/test-report.html
 
 # Linux/Mac
-open postman/reports/test-report.html
+open test/postman/reports/test-report.html
 ```
 
 ## JSON Raporu Kullanımı
@@ -255,7 +255,7 @@ JSON raporu CI/CD pipeline'larında kullanılabilir:
   uses: actions/upload-artifact@v4
   with:
     name: newman-report
-    path: postman/reports/
+    path: test/postman/reports/
 ```
 
 ### Exit Codes
@@ -281,10 +281,10 @@ fi
 ### Hata: "Collection not found"
 ```bash
 # Path'i kontrol et
-ls -la postman/
+ls -la test/postman/collections/
 
 # Tam path ile çalıştır
-newman run "$(pwd)/postman/VardiyaPro_API_Collection_v2.json"
+newman run "$(pwd)/test/postman/collections/VardiyaPro_API_Collection_v2.json"
 ```
 
 ### Hata: "ECONNREFUSED"
@@ -302,7 +302,7 @@ bundle exec rails server
 npm install -g newman
 
 # Veya npx ile çalıştır
-npx newman run postman/VardiyaPro_API_Collection_v2.json
+npx newman run test/postman/collections/VardiyaPro_API_Collection_v2.json
 ```
 
 ## Best Practices
@@ -366,10 +366,10 @@ bundle exec rails db:seed
 npm run test:api:all
 
 # 5. HTML raporunu aç
-start postman/reports/test-report.html
+start test/postman/reports/test-report.html
 
 # 6. CI/CD için JSON'u kontrol et
-cat postman/reports/test-report.json | jq '.run.stats'
+cat test/postman/reports/test-report.json | jq '.run.stats'
 ```
 
 ## Sonuç

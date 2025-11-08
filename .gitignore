@@ -7,6 +7,6 @@ node_modules/
 package-lock.json
 
 # Newman test reports
-postman/reports/*.html
-postman/reports/*.json
-!postman/reports/.gitkeep
+test/postman/reports/*.html
+test/postman/reports/*.json
+!test/postman/reports/.gitkeep

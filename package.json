@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "VardiyaPro - Shift Management System API Testing",
   "scripts": {
-    "test:api": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json",
-    "test:api:html": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r html --reporter-html-export postman/reports/test-report.html",
-    "test:api:json": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r json --reporter-json-export postman/reports/test-report.json",
-    "test:api:all": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json -r html,json,cli --reporter-html-export postman/reports/test-report.html --reporter-json-export postman/reports/test-report.json",
-    "test:api:verbose": "newman run postman/VardiyaPro_API_Collection_v2.json -e postman/VardiyaPro_Environment_Dev.json --verbose",
+    "test:api": "newman run test/postman/collections/VardiyaPro_API_Collection_v2.json -e test/postman/environments/VardiyaPro_Environment_Dev.json",
+    "test:api:html": "newman run test/postman/collections/VardiyaPro_API_Collection_v2.json -e test/postman/environments/VardiyaPro_Environment_Dev.json -r html --reporter-html-export test/postman/reports/test-report.html",
+    "test:api:json": "newman run test/postman/collections/VardiyaPro_API_Collection_v2.json -e test/postman/environments/VardiyaPro_Environment_Dev.json -r json --reporter-json-export test/postman/reports/test-report.json",
+    "test:api:all": "newman run test/postman/collections/VardiyaPro_API_Collection_v2.json -e test/postman/environments/VardiyaPro_Environment_Dev.json -r html,json,cli --reporter-html-export test/postman/reports/test-report.html --reporter-json-export test/postman/reports/test-report.json",
+    "test:api:verbose": "newman run test/postman/collections/VardiyaPro_API_Collection_v2.json -e test/postman/environments/VardiyaPro_Environment_Dev.json --verbose",
     "test:watch": "nodemon --exec npm run test:api"
   },
   "keywords": [
