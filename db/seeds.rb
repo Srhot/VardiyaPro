@@ -13,6 +13,8 @@ if Rails.env.development?
   TimeEntry.delete_all if defined?(TimeEntry)
   Assignment.delete_all
   Shift.delete_all
+  Notification.delete_all if defined?(Notification)
+  AuditLog.delete_all if defined?(AuditLog)
   User.delete_all
   Department.delete_all
   Holiday.delete_all if defined?(Holiday)
