@@ -2,6 +2,9 @@
 tmp/
 log/
 
+# Local personal files (guides, notes, etc.)
+.local/
+
 # Node modules
 node_modules/
 package-lock.json
