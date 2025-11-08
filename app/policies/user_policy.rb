@@ -7,7 +7,7 @@ class UserPolicy < ApplicationPolicy
   # Managers can view users in their department
   # Employees can only view their own profile
   def index?
-    user&.admin? || user&.hr? || user&.manager?
+    user.present?
   end
 
   # Admins and HR can view any user

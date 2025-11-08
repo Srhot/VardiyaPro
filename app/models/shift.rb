@@ -6,7 +6,7 @@ class Shift < ApplicationRecord
   # Associations
   belongs_to :department
   has_many :assignments, dependent: :destroy
-  has_many :users, through: :assignments
+  has_many :users, through: :assignments, source: :employee
 
   # Constants
   SHIFT_TYPES = %w[morning afternoon evening night flexible on_call].freeze

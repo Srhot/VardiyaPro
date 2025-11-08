@@ -81,6 +81,7 @@ RSpec.describe 'Users API', type: :request do
   describe 'POST /api/v1/users' do
     context 'as admin' do
       it 'creates new user' do
+        admin # ensure admin exists before counting
         expect do
           post '/api/v1/users', params: {
             user: {

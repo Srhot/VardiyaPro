@@ -5,7 +5,7 @@ FactoryBot.define do
     association :department
     shift_type { 'morning' }
     start_time { Time.current.tomorrow.change(hour: 8, min: 0) }
-    end_time { Time.current.tomorrow.change(hour: 16, min: 0) }
+    end_time { start_time + 8.hours }
     required_staff { 2 }
     description { Faker::Lorem.sentence }
     active { true }
@@ -25,7 +25,7 @@ FactoryBot.define do
     trait :evening do
       shift_type { 'evening' }
       start_time { Time.current.tomorrow.change(hour: 16, min: 0) }
-      end_time { Time.current.tomorrow.change(hour: 24, min: 0) }
+      end_time { Time.current.tomorrow.change(hour: 23, min: 0) }
     end
 
     trait :night do
@@ -43,7 +43,7 @@ FactoryBot.define do
     trait :on_call do
       shift_type { 'on_call' }
       start_time { Time.current.tomorrow.change(hour: 0, min: 0) }
-      end_time { Time.current.tomorrow.change(hour: 23, min: 59) }
+      end_time { Time.current.tomorrow.change(hour: 12, min: 0) }
     end
 
     trait :inactive do

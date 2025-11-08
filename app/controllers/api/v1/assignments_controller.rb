@@ -159,6 +159,7 @@ module Api
       def assignment_response(assignment, detailed: false)
         response = {
           id: assignment.id,
+          employee_id: assignment.employee_id,
           shift: {
             id: assignment.shift.id,
             shift_type: assignment.shift.shift_type,

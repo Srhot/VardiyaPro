@@ -13,16 +13,14 @@ module Api
           if user.active?
             token = JsonWebToken.encode(user_id: user.id)
             render json: {
-              data: {
-                token: token,
-                user: user_response(user)
-              }
+              token: token,
+              user: user_response(user)
             }, status: :ok
           else
-            render json: { errors: ['Account is inactive'] }, status: :forbidden
+            render json: { errors: ['Account is not active'] }, status: :unauthorized
           end
         else
-          render json: { errors: ['Invalid credentials'] }, status: :unauthorized
+          render json: { errors: ['Invalid email or password'] }, status: :unauthorized
         end
       end
 

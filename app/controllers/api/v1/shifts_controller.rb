@@ -78,20 +78,13 @@ module Api
         end
       end
 
-      # DELETE /api/v1/shifts/:id (admin only - soft delete)
+      # DELETE /api/v1/shifts/:id (admin only)
       def destroy
         return unauthorized unless current_user&.admin?
 
         shift = Shift.find(params[:id])
-        if shift.update(active: false)
-          render json: {
-            message: 'Shift deactivated successfully'
-          }, status: :ok
-        else
-          render json: {
-            errors: shift.errors.full_messages
-          }, status: :unprocessable_entity
-        end
+        shift.destroy
+        head :no_content
       end
 
       private
@@ -111,6 +104,7 @@ module Api
       def shift_response(shift, include_assignments: false)
         response = {
           id: shift.id,
+          department_id: shift.department_id,
           department: {
             id: shift.department.id,
             name: shift.department.name
