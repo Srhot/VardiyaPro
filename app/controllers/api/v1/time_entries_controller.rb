@@ -3,8 +3,7 @@
 module Api
   module V1
     # TimeEntriesController handles clock in/out operations
-    class TimeEntriesController < ApplicationController
-      before_action :authenticate_user!
+    class TimeEntriesController < BaseController
       before_action :set_assignment, only: [:clock_in]
       before_action :set_time_entry, only: [:clock_out, :show, :update]
 
