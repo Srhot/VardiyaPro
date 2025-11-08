@@ -89,3 +89,6 @@ Style/FrozenStringLiteralComment:
 
 Style/EmptyElse:
   Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
