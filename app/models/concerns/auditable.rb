@@ -52,7 +52,7 @@ module Auditable
       auditable_type: self.class.name,
       auditable_id: id,
       action: 'delete',
-      changes: { deleted_attributes: auditable_attributes },
+      audit_changes: { deleted_attributes: auditable_attributes },
       ip_address: current_request_for_audit&.remote_ip,
       user_agent: current_request_for_audit&.user_agent
     )
