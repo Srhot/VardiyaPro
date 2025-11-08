@@ -26,7 +26,7 @@ RSpec.describe 'Shifts API', type: :request do
     end
 
     it 'filters by shift type' do
-      morning = create(:shift, :morning)
+      create(:shift, :morning)
       get '/api/v1/shifts', params: { shift_type: 'morning' }
       json = json_response
       expect(json[:data].map { |s| s[:shift_type] }.uniq).to eq(['morning'])
@@ -52,7 +52,7 @@ RSpec.describe 'Shifts API', type: :request do
   describe 'POST /api/v1/shifts' do
     context 'as admin' do
       it 'creates new shift' do
-        expect {
+        expect do
           post '/api/v1/shifts', params: {
             shift: {
               department_id: department.id,
@@ -62,7 +62,7 @@ RSpec.describe 'Shifts API', type: :request do
               required_staff: 2
             }
           }.to_json, headers: auth_headers_for(admin)
-        }.to change(Shift, :count).by(1)
+        end.to change(Shift, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end
@@ -112,9 +112,9 @@ RSpec.describe 'Shifts API', type: :request do
     context 'as admin' do
       it 'deletes shift' do
         delete_shift = create(:shift)
-        expect {
+        expect do
           delete "/api/v1/shifts/#{delete_shift.id}", headers: auth_headers_for(admin)
-        }.to change(Shift, :count).by(-1)
+        end.to change(Shift, :count).by(-1)
 
         expect(response).to have_http_status(:no_content)
       end

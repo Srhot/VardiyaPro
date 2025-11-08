@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Department < ApplicationRecord
   # Associations
   has_many :users, dependent: :nullify
@@ -8,8 +10,9 @@ class Department < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(active: true) }
-  scope :search, ->(query) {
+  scope :search, lambda { |query|
     return all if query.blank?
+
     where('LOWER(name) LIKE ? OR LOWER(description) LIKE ?', "%#{query.downcase}%", "%#{query.downcase}%")
   }
 

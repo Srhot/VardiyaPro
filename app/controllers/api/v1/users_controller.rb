@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class UsersController < BaseController
       before_action :authenticate_request
-      before_action :set_user, only: [:show, :update, :destroy, :activate, :deactivate]
+      before_action :set_user, only: %i[show update destroy activate deactivate]
 
       # GET /api/v1/users
       # List users (filtered by authorization scope)
@@ -176,14 +178,14 @@ module Api
 
         if detailed
           response.merge!({
-            phone: user.phone,
-            department_id: user.department_id,
-            department_name: user.department&.name,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-            assignments_count: user.assignments.count,
-            upcoming_shifts_count: user.shifts.where('start_time >= ?', Time.current).count
-          })
+                            phone: user.phone,
+                            department_id: user.department_id,
+                            department_name: user.department&.name,
+                            created_at: user.created_at,
+                            updated_at: user.updated_at,
+                            assignments_count: user.assignments.count,
+                            upcoming_shifts_count: user.shifts.where('start_time >= ?', Time.current).count
+                          })
         end
 
         response

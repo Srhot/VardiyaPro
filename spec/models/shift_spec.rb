@@ -34,24 +34,24 @@ RSpec.describe Shift, type: :model do
     describe 'duration_within_limits' do
       it 'is invalid when duration is less than 4 hours' do
         shift = build(:shift,
-                     start_time: Time.current,
-                     end_time: Time.current + 3.hours)
+                      start_time: Time.current,
+                      end_time: Time.current + 3.hours)
         expect(shift).not_to be_valid
         expect(shift.errors[:base]).to include('Shift duration must be at least 4 hours')
       end
 
       it 'is invalid when duration exceeds 12 hours' do
         shift = build(:shift,
-                     start_time: Time.current,
-                     end_time: Time.current + 13.hours)
+                      start_time: Time.current,
+                      end_time: Time.current + 13.hours)
         expect(shift).not_to be_valid
         expect(shift.errors[:base]).to include('Shift duration cannot exceed 12 hours')
       end
 
       it 'is valid when duration is between 4 and 12 hours' do
         shift = build(:shift,
-                     start_time: Time.current,
-                     end_time: Time.current + 8.hours)
+                      start_time: Time.current,
+                      end_time: Time.current + 8.hours)
         expect(shift).to be_valid
       end
     end
@@ -113,8 +113,8 @@ RSpec.describe Shift, type: :model do
     describe '#duration_hours' do
       it 'calculates duration in hours' do
         shift = create(:shift,
-                      start_time: Time.current,
-                      end_time: Time.current + 8.hours)
+                       start_time: Time.current,
+                       end_time: Time.current + 8.hours)
         expect(shift.duration_hours).to eq(8.0)
       end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
   def change
     create_table :solid_queue_jobs do |t|
@@ -25,7 +27,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
       t.datetime :scheduled_at, null: false
       t.timestamps
 
-      t.index [:scheduled_at, :priority, :queue_name], name: "index_solid_queue_dispatch_all"
+      t.index %i[scheduled_at priority queue_name], name: 'index_solid_queue_dispatch_all'
     end
 
     create_table :solid_queue_ready_executions do |t|
@@ -34,7 +36,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
       t.integer :priority, default: 0, null: false
       t.timestamps
 
-      t.index [:priority, :queue_name], name: "index_solid_queue_poll_all"
+      t.index %i[priority queue_name], name: 'index_solid_queue_poll_all'
       t.index :job_id, unique: true
     end
 
@@ -43,7 +45,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
       t.bigint :process_id
       t.timestamps
 
-      t.index [:process_id, :job_id]
+      t.index %i[process_id job_id]
       t.index :job_id, unique: true
     end
 
@@ -55,8 +57,8 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
       t.datetime :expires_at, null: false
       t.timestamps
 
-      t.index [:expires_at, :concurrency_key], name: "index_solid_queue_blocked_executions_for_release"
-      t.index [:concurrency_key, :priority, :queue_name], name: "index_solid_queue_blocked_executions_for_maintenance"
+      t.index %i[expires_at concurrency_key], name: 'index_solid_queue_blocked_executions_for_release'
+      t.index %i[concurrency_key priority queue_name], name: 'index_solid_queue_blocked_executions_for_maintenance'
       t.index :job_id, unique: true
     end
 
@@ -86,7 +88,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.0]
       t.timestamps
 
       t.index :last_heartbeat_at
-      t.index [:kind, :last_heartbeat_at], name: "index_solid_queue_processes_on_kind"
+      t.index %i[kind last_heartbeat_at], name: 'index_solid_queue_processes_on_kind'
       t.index :supervisor_id
     end
 

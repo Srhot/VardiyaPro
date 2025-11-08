@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Be sure to restart your server when you modify this file.
 
 # Avoid CORS issues when API is called from the frontend app.
@@ -10,9 +12,9 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     origins Rails.env.production? ? ENV.fetch('FRONTEND_URL') : '*'
 
     resource '/api/*',
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: Rails.env.production?,  # Only allow credentials in production with specific origin
-      max_age: 86400
+             headers: :any,
+             methods: %i[get post put patch delete options head],
+             credentials: Rails.env.production?, # Only allow credentials in production with specific origin
+             max_age: 86_400
   end
 end

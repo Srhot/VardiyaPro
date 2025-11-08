@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class ReportsController < BaseController
@@ -32,15 +34,18 @@ module Api
 
         # Shift type breakdown
         shift_type_breakdown = assignments.confirmed.or(assignments.completed)
-                                        .joins(:shift)
-                                        .group('shifts.shift_type')
-                                        .select('shifts.shift_type, COUNT(*) as count, SUM(EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600) as hours')
-                                        .map { |s| { shift_type: s.shift_type, count: s.count, hours: s.hours.to_f.round(2) } }
+                                          .joins(:shift)
+                                          .group('shifts.shift_type')
+                                          .select('shifts.shift_type, COUNT(*) as count, SUM(EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600) as hours')
+                                          .map do |s|
+          { shift_type: s.shift_type, count: s.count,
+            hours: s.hours.to_f.round(2) }
+        end
 
         # Recent assignments
         recent_assignments = assignments.order('shifts.start_time DESC')
-                                      .limit(10)
-                                      .map do |assignment|
+                                        .limit(10)
+                                        .map do |assignment|
           {
             id: assignment.id,
             shift_type: assignment.shift.shift_type,
@@ -91,18 +96,18 @@ module Api
 
         # Get shifts in date range
         shifts = department.shifts
-                          .where('start_time >= ? AND end_time <= ?', @start_date, @end_date)
+                           .where('start_time >= ? AND end_time <= ?', @start_date, @end_date)
 
         # Employee statistics
         employees = department.users.active
         employee_stats = employees.map do |employee|
           assignments = employee.assignments
-                              .joins(:shift)
-                              .where(shift_id: shifts.pluck(:id))
+                                .joins(:shift)
+                                .where(shift_id: shifts.pluck(:id))
 
           total_hours = assignments.confirmed.or(assignments.completed)
-                                  .joins(:shift)
-                                  .sum('EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600')
+                                   .joins(:shift)
+                                   .sum('EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600')
 
           {
             id: employee.id,
@@ -121,12 +126,12 @@ module Api
 
         # Shift type distribution
         shift_type_distribution = shifts.group(:shift_type)
-                                       .select('shift_type, COUNT(*) as count')
-                                       .map { |s| { shift_type: s.shift_type, count: s.count } }
+                                        .select('shift_type, COUNT(*) as count')
+                                        .map { |s| { shift_type: s.shift_type, count: s.count } }
 
         # Coverage rate (confirmed assignments / required staff)
         total_required_staff = shifts.sum(:required_staff)
-        coverage_rate = total_required_staff > 0 ? (confirmed_assignments.to_f / total_required_staff * 100).round(2) : 0
+        coverage_rate = total_required_staff.positive? ? (confirmed_assignments.to_f / total_required_staff * 100).round(2) : 0
 
         render json: {
           data: {
@@ -170,17 +175,17 @@ module Api
 
         # Get all employees (filtered by department for managers)
         employees = if current_user.manager?
-                     User.active.where(department_id: current_user.department_id)
-                   else
-                     User.active
-                   end
+                      User.active.where(department_id: current_user.department_id)
+                    else
+                      User.active
+                    end
 
         overtime_data = employees.map do |employee|
           # Get assignments in date range
           assignments = employee.assignments
-                               .confirmed.or(employee.assignments.completed)
-                               .joins(:shift)
-                               .where('shifts.start_time >= ? AND shifts.end_time <= ?', @start_date, @end_date)
+                                .confirmed.or(employee.assignments.completed)
+                                .joins(:shift)
+                                .where('shifts.start_time >= ? AND shifts.end_time <= ?', @start_date, @end_date)
 
           total_hours = assignments.sum('EXTRACT(EPOCH FROM (shifts.end_time - shifts.start_time)) / 3600').to_f.round(2)
           overtime_hours = [total_hours - standard_hours_total, 0].max.round(2)
@@ -246,7 +251,8 @@ module Api
         # Overall statistics
         total_employees = User.active.count
         total_shifts = Shift.where('start_time >= ? AND end_time <= ?', @start_date, @end_date).count
-        total_assignments = Assignment.joins(:shift).where('shifts.start_time >= ? AND shifts.end_time <= ?', @start_date, @end_date).count
+        total_assignments = Assignment.joins(:shift).where('shifts.start_time >= ? AND shifts.end_time <= ?',
+                                                           @start_date, @end_date).count
 
         render json: {
           data: {

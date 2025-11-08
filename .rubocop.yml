@@ -1,0 +1,57 @@
+# frozen_string_literal: true
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+
+# Disable BlockLength for test files
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*_spec.rb'
+    - 'spec/factories/**/*.rb'
+    - 'config/routes.rb'
+    - 'config/environments/*.rb'
+
+# Disable MethodLength for some files
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - 'db/seeds.rb'
+    - 'app/controllers/**/*'
+
+# Relax AbcSize
+Metrics/AbcSize:
+  Max: 25
+  Exclude:
+    - 'db/seeds.rb'
+    - 'spec/**/*'
+
+# Relax Cyclomatic Complexity
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+# Relax Perceived Complexity
+Metrics/PerceivedComplexity:
+  Max: 10
+
+# Disable ClassLength
+Metrics/ClassLength:
+  Enabled: false
+
+# Style preferences - less strict
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always

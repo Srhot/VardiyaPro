@@ -81,7 +81,7 @@ RSpec.describe 'Users API', type: :request do
   describe 'POST /api/v1/users' do
     context 'as admin' do
       it 'creates new user' do
-        expect {
+        expect do
           post '/api/v1/users', params: {
             user: {
               email: 'newuser@example.com',
@@ -91,7 +91,7 @@ RSpec.describe 'Users API', type: :request do
               password_confirmation: 'password123'
             }
           }.to_json, headers: auth_headers_for(admin)
-        }.to change(User, :count).by(1)
+        end.to change(User, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end

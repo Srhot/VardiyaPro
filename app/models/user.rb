@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   include Auditable
 
@@ -21,8 +23,9 @@ class User < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :by_role, ->(role) { where(role: role) }
   scope :in_department, ->(department_id) { where(department_id: department_id) }
-  scope :search, ->(query) {
+  scope :search, lambda { |query|
     return all if query.blank?
+
     where('LOWER(name) LIKE ? OR LOWER(email) LIKE ?', "%#{query.downcase}%", "%#{query.downcase}%")
   }
 

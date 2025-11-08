@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Authenticable
   extend ActiveSupport::Concern
 
@@ -16,7 +18,7 @@ module Authenticable
     header = request.headers['Authorization']
     return nil unless header
 
-    token = header.split(' ').last
+    token = header.split.last
     decoded = JsonWebToken.decode(token)
     return nil unless decoded
 

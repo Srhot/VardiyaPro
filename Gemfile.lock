@@ -374,6 +374,7 @@ DEPENDENCIES
   solid_cable
   solid_cache
   solid_queue
+  tzinfo-data
 
 RUBY VERSION
    ruby 3.3.6p108

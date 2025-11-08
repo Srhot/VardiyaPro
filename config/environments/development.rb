@@ -1,4 +1,6 @@
-require "active_support/core_ext/integer/time"
+# frozen_string_literal: true
+
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -19,11 +21,11 @@ Rails.application.configure do
 
   # Enable/disable Action Controller caching.
   # Run rails dev:cache to toggle caching.
-  if Rails.root.join("tmp/caching-dev.txt").exist?
-    config.cache_store = :solid_cache_store
-  else
-    config.cache_store = :null_store
-  end
+  config.cache_store = if Rails.root.join('tmp/caching-dev.txt').exist?
+                         :solid_cache_store
+                       else
+                         :null_store
+                       end
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false

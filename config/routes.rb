@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Health check endpoint
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up' => 'rails/health#show', as: :rails_health_check
 
   # API v1 namespace
   namespace :api do
@@ -13,7 +15,7 @@ Rails.application.routes.draw do
       delete 'auth/logout', to: 'auth#logout'
 
       # Resources
-      resources :departments, only: [:index, :show, :create, :update]
+      resources :departments, only: %i[index show create update]
       resources :shifts
       resources :assignments do
         member do
@@ -31,7 +33,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :notifications, only: [:index, :show, :destroy] do
+      resources :notifications, only: %i[index show destroy] do
         collection do
           patch :mark_all_as_read
           delete :destroy_all_read
@@ -48,7 +50,7 @@ Rails.application.routes.draw do
       get 'reports/summary', to: 'reports#summary'
 
       # Audit Logs (admin only)
-      resources :audit_logs, only: [:index, :show] do
+      resources :audit_logs, only: %i[index show] do
         collection do
           get :for_record
         end
@@ -61,24 +63,24 @@ Rails.application.routes.draw do
       post 'auth/login', to: 'auth#login'
 
       # Users (enhanced with additional fields)
-      resources :users, only: [:index, :show, :create, :update] do
+      resources :users, only: %i[index show create update] do
         member do
-          get :profile  # NEW: Enhanced profile with more details
-          get :statistics  # NEW: User statistics
+          get :profile # NEW: Enhanced profile with more details
+          get :statistics # NEW: User statistics
         end
       end
 
       # Departments (enhanced with team metrics)
-      resources :departments, only: [:index, :show, :create, :update] do
+      resources :departments, only: %i[index show create update] do
         member do
-          get :team_metrics  # NEW: Team performance metrics
+          get :team_metrics # NEW: Team performance metrics
         end
       end
 
       # Shifts (enhanced with capacity planning)
       resources :shifts do
         collection do
-          get :capacity_report  # NEW: Capacity planning report
+          get :capacity_report # NEW: Capacity planning report
         end
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateAuditLogs < ActiveRecord::Migration[8.0]
   def change
     create_table :audit_logs do |t|
@@ -21,7 +23,7 @@ class CreateAuditLogs < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :audit_logs, [:auditable_type, :auditable_id]
+    add_index :audit_logs, %i[auditable_type auditable_id]
     add_index :audit_logs, :user_id
     add_index :audit_logs, :action
     add_index :audit_logs, :created_at

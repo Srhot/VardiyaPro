@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class DepartmentsController < BaseController
-      skip_before_action :authenticate_request, only: [:index, :show]
+      skip_before_action :authenticate_request, only: %i[index show]
 
       # GET /api/v1/departments
       def index

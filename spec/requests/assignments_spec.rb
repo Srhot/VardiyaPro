@@ -25,7 +25,7 @@ RSpec.describe 'Assignments API', type: :request do
     end
 
     it 'filters by status' do
-      confirmed = create(:assignment, :confirmed)
+      create(:assignment, :confirmed)
       get '/api/v1/assignments', params: { status: 'confirmed' }
       json = json_response
       expect(json[:data].map { |a| a[:status] }.uniq).to eq(['confirmed'])
@@ -37,7 +37,7 @@ RSpec.describe 'Assignments API', type: :request do
       let(:new_employee) { create(:user) }
 
       it 'creates assignment' do
-        expect {
+        expect do
           post '/api/v1/assignments', params: {
             assignment: {
               shift_id: shift.id,
@@ -45,7 +45,7 @@ RSpec.describe 'Assignments API', type: :request do
               status: 'pending'
             }
           }.to_json, headers: auth_headers_for(admin)
-        }.to change(Assignment, :count).by(1)
+        end.to change(Assignment, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end

@@ -16,6 +16,7 @@ class UserPolicy < ApplicationPolicy
   def show?
     return true if user&.admin? || user&.hr?
     return true if user&.manager? && same_department?
+
     own_profile?
   end
 
@@ -30,6 +31,7 @@ class UserPolicy < ApplicationPolicy
   def update?
     return true if user&.admin? || user&.hr?
     return true if user&.manager? && same_department?
+
     own_profile?
   end
 
@@ -56,13 +58,13 @@ class UserPolicy < ApplicationPolicy
   def permitted_attributes
     if user&.admin? || user&.hr?
       # Admins and HR can modify all fields
-      [:email, :name, :role, :phone, :active, :department_id, :password, :password_confirmation]
+      %i[email name role phone active department_id password password_confirmation]
     elsif user&.manager?
       # Managers can modify limited fields (no role changes)
-      [:email, :name, :phone, :department_id]
+      %i[email name phone department_id]
     else
       # Employees can only modify their own profile fields
-      [:name, :phone, :email]
+      %i[name phone email]
     end
   end
 

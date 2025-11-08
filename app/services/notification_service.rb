@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Service class for creating and sending notifications
 # Handles both in-app notifications and email notifications
 class NotificationService

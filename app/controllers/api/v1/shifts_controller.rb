@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class ShiftsController < BaseController
-      skip_before_action :authenticate_request, only: [:index, :show]
+      skip_before_action :authenticate_request, only: %i[index show]
 
       # GET /api/v1/shifts
       def index
@@ -16,13 +18,13 @@ module Api
         shifts = shifts.on_date(params[:date]) if params[:date].present?
         shifts = shifts.with_available_slots if params[:available] == 'true'
 
-        if params[:start_date].present? && params[:end_date].present?
-          shifts = shifts.in_range(params[:start_date], params[:end_date])
-        elsif params[:upcoming] == 'true'
-          shifts = shifts.upcoming
-        else
-          shifts = shifts.order(:start_time)
-        end
+        shifts = if params[:start_date].present? && params[:end_date].present?
+                   shifts.in_range(params[:start_date], params[:end_date])
+                 elsif params[:upcoming] == 'true'
+                   shifts.upcoming
+                 else
+                   shifts.order(:start_time)
+                 end
 
         # Pagination
         page = params[:page] || 1

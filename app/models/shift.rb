@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Shift < ApplicationRecord
   include Auditable
 
@@ -26,13 +28,14 @@ class Shift < ApplicationRecord
   scope :upcoming, -> { where('start_time >= ?', Time.current).order(:start_time) }
   scope :in_range, ->(start_date, end_date) { where('start_time >= ? AND end_time <= ?', start_date, end_date) }
   scope :on_date, ->(date) { where('DATE(start_time) = ?', date) }
-  scope :with_available_slots, -> {
+  scope :with_available_slots, lambda {
     joins('LEFT JOIN assignments ON assignments.shift_id = shifts.id AND assignments.status = \'confirmed\'')
       .group('shifts.id')
       .having('COUNT(assignments.id) < shifts.required_staff')
   }
-  scope :search, ->(query) {
+  scope :search, lambda { |query|
     return all if query.blank?
+
     joins(:department).where('LOWER(departments.name) LIKE ? OR LOWER(shifts.description) LIKE ?',
                              "%#{query.downcase}%", "%#{query.downcase}%")
   }
@@ -44,6 +47,7 @@ class Shift < ApplicationRecord
   # Instance methods
   def duration_hours
     return 0 unless start_time && end_time
+
     ((end_time - start_time) / 1.hour).round(2)
   end
 
@@ -72,9 +76,9 @@ class Shift < ApplicationRecord
   def end_time_after_start_time
     return if end_time.blank? || start_time.blank?
 
-    if end_time <= start_time
-      errors.add(:end_time, 'must be after start time')
-    end
+    return unless end_time <= start_time
+
+    errors.add(:end_time, 'must be after start time')
   end
 
   def duration_within_limits

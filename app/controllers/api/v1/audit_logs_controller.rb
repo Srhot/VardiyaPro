@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class AuditLogsController < BaseController
@@ -15,12 +17,8 @@ module Api
         logs = logs.by_auditable_type(params[:auditable_type]) if params[:auditable_type].present?
 
         # Date range
-        if params[:start_date].present?
-          logs = logs.where('created_at >= ?', params[:start_date])
-        end
-        if params[:end_date].present?
-          logs = logs.where('created_at <= ?', params[:end_date])
-        end
+        logs = logs.where('created_at >= ?', params[:start_date]) if params[:start_date].present?
+        logs = logs.where('created_at <= ?', params[:end_date]) if params[:end_date].present?
 
         # Pagination
         page = params[:page] || 1
@@ -53,8 +51,8 @@ module Api
         end
 
         logs = AuditLog.for_record(params[:auditable_type], params[:auditable_id])
-                      .includes(:user)
-                      .recent
+                       .includes(:user)
+                       .recent
 
         render json: {
           data: logs.map { |log| audit_log_response(log, detailed: true) }
@@ -64,9 +62,9 @@ module Api
       private
 
       def authorize_admin
-        unless current_user&.admin?
-          render json: { errors: ['Admin access required'] }, status: :forbidden
-        end
+        return if current_user&.admin?
+
+        render json: { errors: ['Admin access required'] }, status: :forbidden
       end
 
       def audit_log_response(log, detailed: false)
@@ -84,10 +82,10 @@ module Api
 
         if detailed
           response.merge!({
-            changes: log.changes,
-            ip_address: log.ip_address,
-            user_agent: log.user_agent
-          })
+                            changes: log.changes,
+                            ip_address: log.ip_address,
+                            user_agent: log.user_agent
+                          })
         end
 
         response

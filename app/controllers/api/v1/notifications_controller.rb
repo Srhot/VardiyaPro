@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class NotificationsController < BaseController
       before_action :authenticate_request
-      before_action :set_notification, only: [:show, :mark_as_read, :destroy]
+      before_action :set_notification, only: %i[show mark_as_read destroy]
 
       # GET /api/v1/notifications
       # List user's notifications
@@ -99,10 +101,10 @@ module Api
 
         if detailed
           response.merge!({
-            related_type: notification.related_type,
-            related_id: notification.related_id,
-            updated_at: notification.updated_at
-          })
+                            related_type: notification.related_type,
+                            related_id: notification.related_id,
+                            updated_at: notification.updated_at
+                          })
         end
 
         response

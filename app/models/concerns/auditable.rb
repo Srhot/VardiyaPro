@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Auditable concern for models that need audit logging
 # Include this module in models that should be audited
 module Auditable

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Api
   module V2
     class UsersController < BaseController
       before_action :authenticate_request
-      before_action :set_user, only: [:show, :profile, :statistics]
+      before_action :set_user, only: %i[show profile statistics]
 
       # Inherited from v1:
       # - index
@@ -47,14 +49,15 @@ module Api
             total_shifts: @user.assignments.count,
             confirmed_shifts: @user.assignments.confirmed.count,
             completed_shifts: @user.assignments.completed.count,
-            total_hours_this_month: calculate_total_hours(@user, Date.current.beginning_of_month, Date.current.end_of_month),
+            total_hours_this_month: calculate_total_hours(@user, Date.current.beginning_of_month,
+                                                          Date.current.end_of_month),
             upcoming_shifts: @user.shifts.where('start_time >= ?', Time.current).count
           },
           recent_activity: {
             last_shift: @user.assignments.joins(:shift)
-                              .order('shifts.start_time DESC')
-                              .first&.shift&.start_time,
-            last_login: nil  # TODO: Add last_login tracking
+                             .order('shifts.start_time DESC')
+                             .first&.shift&.start_time,
+            last_login: nil # TODO: Add last_login tracking
           },
           performance_metrics: {
             attendance_rate: calculate_attendance_rate(@user),
@@ -126,22 +129,23 @@ module Api
           name: user.name,
           role: user.role,
           active: user.active,
-          version: 'v2'  # Version indicator
+          version: 'v2' # Version indicator
         }
 
         if detailed
           response.merge!({
-            phone: user.phone,
-            department_id: user.department_id,
-            department_name: user.department&.name,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-            assignments_count: user.assignments.count,
-            upcoming_shifts_count: user.shifts.where('start_time >= ?', Time.current).count,
-            # NEW in v2:
-            total_hours_this_month: calculate_total_hours(user, Date.current.beginning_of_month, Date.current.end_of_month),
-            attendance_rate: calculate_attendance_rate(user)
-          })
+                            phone: user.phone,
+                            department_id: user.department_id,
+                            department_name: user.department&.name,
+                            created_at: user.created_at,
+                            updated_at: user.updated_at,
+                            assignments_count: user.assignments.count,
+                            upcoming_shifts_count: user.shifts.where('start_time >= ?', Time.current).count,
+                            # NEW in v2:
+                            total_hours_this_month: calculate_total_hours(user, Date.current.beginning_of_month,
+                                                                          Date.current.end_of_month),
+                            attendance_rate: calculate_attendance_rate(user)
+                          })
         end
 
         response
@@ -199,7 +203,7 @@ module Api
         day_counts = user.assignments
                          .joins(:shift)
                          .where('shifts.start_time >= ? AND shifts.end_time <= ?', start_date, end_date)
-                         .group("EXTRACT(DOW FROM shifts.start_time)")
+                         .group('EXTRACT(DOW FROM shifts.start_time)')
                          .count
 
         return nil if day_counts.empty?

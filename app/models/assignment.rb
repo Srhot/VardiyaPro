@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Assignment < ApplicationRecord
   include Auditable
 
@@ -40,16 +42,17 @@ class Assignment < ApplicationRecord
 
     # Find any overlapping assignments for this employee
     overlapping = Assignment
-      .joins(:shift)
-      .where(employee_id: employee_id)
-      .where(status: %w[pending confirmed])
-      .where.not(id: id) # Exclude current record if updating
-      .where('shifts.start_time < ? AND shifts.end_time > ?', shift_end, shift_start)
+                  .joins(:shift)
+                  .where(employee_id: employee_id)
+                  .where(status: %w[pending confirmed])
+                  .where.not(id: id) # Exclude current record if updating
+                  .where('shifts.start_time < ? AND shifts.end_time > ?', shift_end, shift_start)
 
-    if overlapping.exists?
-      overlapping_shift = overlapping.first.shift
-      errors.add(:base, "Employee is already assigned to an overlapping shift (#{overlapping_shift.shift_type} from #{overlapping_shift.start_time.strftime('%Y-%m-%d %H:%M')} to #{overlapping_shift.end_time.strftime('%Y-%m-%d %H:%M')})")
-    end
+    return unless overlapping.exists?
+
+    overlapping_shift = overlapping.first.shift
+    errors.add(:base,
+               "Employee is already assigned to an overlapping shift (#{overlapping_shift.shift_type} from #{overlapping_shift.start_time.strftime('%Y-%m-%d %H:%M')} to #{overlapping_shift.end_time.strftime('%Y-%m-%d %H:%M')})")
   end
 
   # Validates that shift has available slots
@@ -58,14 +61,14 @@ class Assignment < ApplicationRecord
 
     # Count confirmed assignments for this shift (excluding current if updating)
     confirmed_count = Assignment
-      .where(shift_id: shift_id)
-      .where(status: %w[confirmed])
-      .where.not(id: id)
-      .count
+                      .where(shift_id: shift_id)
+                      .where(status: %w[confirmed])
+                      .where.not(id: id)
+                      .count
 
-    if confirmed_count >= shift.required_staff
-      errors.add(:base, "Shift is already full (#{shift.required_staff} required, #{confirmed_count} confirmed)")
-    end
+    return unless confirmed_count >= shift.required_staff
+
+    errors.add(:base, "Shift is already full (#{shift.required_staff} required, #{confirmed_count} confirmed)")
   end
 
   # Notification callbacks

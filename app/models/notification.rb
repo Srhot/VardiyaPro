@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Notification < ApplicationRecord
   # Associations
   belongs_to :user
@@ -67,9 +69,7 @@ class Notification < ApplicationRecord
     )
   end
 
-  private
-
-  def self.generate_title(type, object)
+  def self.generate_title(type, _object)
     case type
     when 'shift_assigned'
       'New Shift Assignment'
@@ -92,26 +92,26 @@ class Notification < ApplicationRecord
     end
   end
 
-  def self.generate_message(type, object)
+  def self.generate_message(type, _object)
     case type
     when 'shift_assigned'
-      "You have been assigned to a new shift."
+      'You have been assigned to a new shift.'
     when 'shift_confirmed'
-      "Your shift assignment has been confirmed."
+      'Your shift assignment has been confirmed.'
     when 'shift_cancelled'
-      "Your shift has been cancelled."
+      'Your shift has been cancelled.'
     when 'shift_reminder'
-      "Reminder: Your shift is coming up soon."
+      'Reminder: Your shift is coming up soon.'
     when 'shift_updated'
-      "Your shift details have been updated."
+      'Your shift details have been updated.'
     when 'shift_deleted'
-      "A shift you were assigned to has been deleted."
+      'A shift you were assigned to has been deleted.'
     when 'assignment_confirmed'
-      "Your shift assignment has been confirmed."
+      'Your shift assignment has been confirmed.'
     when 'assignment_cancelled'
-      "Your shift assignment has been cancelled."
+      'Your shift assignment has been cancelled.'
     else
-      "You have a new notification."
+      'You have a new notification.'
     end
   end
 end
