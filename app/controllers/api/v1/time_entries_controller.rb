@@ -76,7 +76,7 @@ module Api
 
         if @time_entry.update(clock_out_time: Time.current, notes: params[:notes] || @time_entry.notes)
           # Update assignment status to completed
-          @time_entry.assignment.update(status: 'completed', completed_at: Time.current)
+          @time_entry.assignment.update(status: 'completed')
 
           render json: { data: time_entry_response(@time_entry) }, status: :ok
         else
@@ -149,10 +149,10 @@ module Api
             status: time_entry.assignment.status,
             shift: {
               id: time_entry.assignment.shift.id,
-              title: time_entry.assignment.shift.title,
               shift_type: time_entry.assignment.shift.shift_type,
               start_time: time_entry.assignment.shift.start_time,
-              end_time: time_entry.assignment.shift.end_time
+              end_time: time_entry.assignment.shift.end_time,
+              description: time_entry.assignment.shift.description
             }
           },
           employee: {
