@@ -4,6 +4,7 @@ module Api
   module V1
     # HolidaysController handles CRUD operations for holidays
     class HolidaysController < BaseController
+      skip_before_action :authenticate_request, only: %i[index show check]
       before_action :set_holiday, only: [:show, :update, :destroy]
 
       # GET /api/v1/holidays

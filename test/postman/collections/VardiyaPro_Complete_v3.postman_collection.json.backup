@@ -64,7 +64,7 @@
         "type": "text/javascript",
         "exec": [
           "// Global Pre-request Script - Runs before every request",
-          "const token = pm.environment.get('token');",
+          "const token = pm.collectionVariables.get('token');",
           "",
           "// Check if token exists (skip for login endpoint)",
           "if (!token && !pm.request.url.path.includes('login')) {",
@@ -146,8 +146,8 @@
                   "// Save token and user_id to environment",
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
-                  "    pm.environment.set('token', jsonData.token);",
-                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "    pm.collectionVariables.set('user_id', jsonData.user.id);",
                   "    console.log('✅ Token saved:', jsonData.token.substring(0, 20) + '...');",
                   "    console.log('✅ User ID saved:', jsonData.user.id);",
                   "}"
@@ -269,7 +269,7 @@
               "script": {
                 "exec": [
                   "// Check token exists",
-                  "const token = pm.environment.get('token');",
+                  "const token = pm.collectionVariables.get('token');",
                   "if (!token) {",
                   "    console.error('❌ No token. Please login first.');",
                   "}"
@@ -307,7 +307,7 @@
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
-                  "        pm.environment.set('department_id', jsonData.data[0].id);",
+                  "        pm.collectionVariables.set('department_id', jsonData.data[0].id);",
                   "        console.log('✅ Department ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
@@ -465,7 +465,7 @@
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
-                  "        pm.environment.set('shift_id', jsonData.data[0].id);",
+                  "        pm.collectionVariables.set('shift_id', jsonData.data[0].id);",
                   "        console.log('✅ Shift ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
@@ -629,7 +629,7 @@
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
-                  "        pm.environment.set('assignment_id', jsonData.data[0].id);",
+                  "        pm.collectionVariables.set('assignment_id', jsonData.data[0].id);",
                   "        console.log('✅ Assignment ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
@@ -737,7 +737,7 @@
                   "// Save time_entry_id",
                   "if (pm.response.code === 201) {",
                   "    const jsonData = pm.response.json();",
-                  "    pm.environment.set('time_entry_id', jsonData.data.id);",
+                  "    pm.collectionVariables.set('time_entry_id', jsonData.data.id);",
                   "    console.log('✅ Time Entry ID saved:', jsonData.data.id);",
                   "}"
                 ]
@@ -924,7 +924,7 @@
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.data.length > 0) {",
-                  "        pm.environment.set('holiday_id', jsonData.data[0].id);",
+                  "        pm.collectionVariables.set('holiday_id', jsonData.data[0].id);",
                   "        console.log('✅ Holiday ID saved:', jsonData.data[0].id);",
                   "    }",
                   "}"
