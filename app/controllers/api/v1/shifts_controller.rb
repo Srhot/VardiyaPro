@@ -127,13 +127,13 @@ module Api
         }
 
         if include_assignments
-          response[:assignments] = shift.assignments.includes(:user).map do |assignment|
+          response[:assignments] = shift.assignments.includes(:employee).map do |assignment|
             {
               id: assignment.id,
-              user: {
-                id: assignment.user.id,
-                name: assignment.user.name,
-                email: assignment.user.email
+              employee: {
+                id: assignment.employee.id,
+                name: assignment.employee.name,
+                email: assignment.employee.email
               },
               status: assignment.status
             }
