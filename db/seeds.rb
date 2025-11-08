@@ -10,10 +10,12 @@ puts ''
 # Clear existing data (development only)
 if Rails.env.development?
   puts '🧹 Cleaning existing data...'
-  Assignment.destroy_all
-  Shift.destroy_all
-  User.destroy_all
-  Department.destroy_all
+  TimeEntry.delete_all if defined?(TimeEntry)
+  Assignment.delete_all
+  Shift.delete_all
+  User.delete_all
+  Department.delete_all
+  Holiday.delete_all if defined?(Holiday)
   puts '   ✓ Existing data cleared'
   puts ''
 end
