@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VardiyaPro - Shift Management System</title>
+    <meta name="description" content="Professional shift management system for teams and organizations">
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -30,24 +31,44 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Hide scrollbar for sidebar */
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- App Container -->
     <div id="app"></div>
 
+    <!-- Modal Container -->
+    <div id="modal-root"></div>
+
     <script>
-        // API Configuration
+        // ========================================
+        // CONFIGURATION & STATE
+        // ========================================
         const API_BASE_URL = 'http://127.0.0.1:3000/api/v1';
 
-        // State Management
         const state = {
             token: localStorage.getItem('token'),
             user: JSON.parse(localStorage.getItem('user') || 'null'),
-            currentView: 'login'
+            currentView: window.location.hash.slice(1) || 'login',
+            data: {
+                departments: [],
+                users: [],
+                shifts: [],
+                assignments: []
+            }
         };
 
-        // API Helper
+        // ========================================
+        // API HELPER
+        // ========================================
         async function apiCall(endpoint, options = {}) {
             const headers = {
                 'Content-Type': 'application/json',
@@ -73,7 +94,9 @@
             }
         }
 
-        // Authentication
+        // ========================================
+        // AUTHENTICATION
+        // ========================================
         async function login(email, password) {
             try {
                 const data = await apiCall('/auth/login', {
@@ -86,7 +109,7 @@
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                showView('dashboard');
+                navigateTo('dashboard');
                 showToast('Welcome back, ' + data.user.name + '!', 'success');
             } catch (error) {
                 showToast(error.message, 'error');
@@ -98,11 +121,109 @@
             state.user = null;
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            showView('login');
+            navigateTo('login');
             showToast('Logged out successfully', 'success');
         }
 
-        // Toast Notification
+        // ========================================
+        // NAVIGATION & ROUTING
+        // ========================================
+        function navigateTo(view) {
+            state.currentView = view;
+            window.location.hash = view;
+            render();
+        }
+
+        window.addEventListener('hashchange', () => {
+            state.currentView = window.location.hash.slice(1) || 'login';
+            render();
+        });
+
+        // ========================================
+        // DATA FETCHING
+        // ========================================
+        async function fetchDepartments() {
+            try {
+                const data = await apiCall('/departments');
+                state.data.departments = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load departments', 'error');
+                return [];
+            }
+        }
+
+        async function fetchUsers() {
+            try {
+                const data = await apiCall('/users');
+                state.data.users = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load users', 'error');
+                return [];
+            }
+        }
+
+        async function fetchShifts() {
+            try {
+                const data = await apiCall('/shifts');
+                state.data.shifts = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load shifts', 'error');
+                return [];
+            }
+        }
+
+        async function fetchAssignments() {
+            try {
+                const data = await apiCall('/assignments');
+                state.data.assignments = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load assignments', 'error');
+                return [];
+            }
+        }
+
+        // ========================================
+        // CRUD OPERATIONS
+        // ========================================
+        async function createDepartment(name, description) {
+            try {
+                const data = await apiCall('/departments', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, description, active: true })
+                });
+                showToast('Department created successfully', 'success');
+                await fetchDepartments();
+                render();
+                return data;
+            } catch (error) {
+                showToast('Failed to create department: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        async function updateDepartment(id, name, description) {
+            try {
+                const data = await apiCall(`/departments/${id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ name, description })
+                });
+                showToast('Department updated successfully', 'success');
+                await fetchDepartments();
+                render();
+                return data;
+            } catch (error) {
+                showToast('Failed to update department: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        // ========================================
+        // UI UTILITIES
+        // ========================================
         function showToast(message, type = 'info') {
             const colors = {
                 success: 'bg-green-500',
@@ -121,18 +242,97 @@
             }, 3000);
         }
 
-        // Views
-        function showView(view) {
-            state.currentView = view;
-            render();
+        function showModal(content) {
+            const modal = document.getElementById('modal-root');
+            modal.innerHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4" onclick="closeModal(event)">
+                    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto" onclick="event.stopPropagation()">
+                        ${content}
+                    </div>
+                </div>
+            `;
         }
 
-        // Login View
+        function closeModal(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('modal-root').innerHTML = '';
+        }
+
+        // ========================================
+        // LAYOUT COMPONENTS
+        // ========================================
+        function renderSidebar() {
+            const { user } = state;
+            const menuItems = [
+                { name: 'Dashboard', icon: 'dashboard', view: 'dashboard', roles: ['admin', 'hr', 'manager', 'employee'] },
+                { name: 'Departments', icon: 'apartment', view: 'departments', roles: ['admin', 'hr'] },
+                { name: 'Users', icon: 'group', view: 'users', roles: ['admin', 'hr'] },
+                { name: 'Shifts', icon: 'calendar_month', view: 'shifts', roles: ['admin', 'hr', 'manager'] },
+                { name: 'Assignments', icon: 'assignment', view: 'assignments', roles: ['admin', 'hr', 'manager', 'employee'] },
+            ];
+
+            const filteredItems = menuItems.filter(item => item.roles.includes(user.role));
+
+            return `
+                <div class="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+                    <!-- Logo -->
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white">calendar_month</span>
+                            </div>
+                            <div>
+                                <h1 class="text-lg font-bold text-gray-900">VardiyaPro</h1>
+                                <p class="text-xs text-gray-500">${user.role.toUpperCase()}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <nav class="flex-1 p-4 space-y-1 overflow-y-auto hide-scroll">
+                        ${filteredItems.map(item => `
+                            <a
+                                href="#${item.view}"
+                                class="flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                                    state.currentView === item.view
+                                        ? 'bg-blue-50 text-primary'
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }"
+                            >
+                                <span class="material-symbols-outlined">${item.icon}</span>
+                                <span class="font-medium">${item.name}</span>
+                            </a>
+                        `).join('')}
+                    </nav>
+
+                    <!-- User Info & Logout -->
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">${user.name}</p>
+                                <p class="text-xs text-gray-500 truncate">${user.email}</p>
+                            </div>
+                            <button
+                                onclick="logout()"
+                                class="ml-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                title="Logout"
+                                aria-label="Logout"
+                            >
+                                <span class="material-symbols-outlined">logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // VIEW: LOGIN
+        // ========================================
         function renderLogin() {
             return `
                 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
                     <div class="max-w-md w-full">
-                        <!-- Logo -->
                         <div class="text-center mb-8">
                             <div class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
                                 <span class="material-symbols-outlined text-white text-3xl">calendar_month</span>
@@ -141,7 +341,6 @@
                             <p class="text-gray-600 mt-2">Shift Management System</p>
                         </div>
 
-                        <!-- Login Form -->
                         <div class="bg-white rounded-xl shadow-lg p-8">
                             <h2 class="text-2xl font-bold text-gray-900 mb-6">Sign In</h2>
 
@@ -184,7 +383,6 @@
                                 </button>
                             </form>
 
-                            <!-- Test Credentials -->
                             <div class="mt-6 p-4 bg-gray-50 rounded-lg">
                                 <p class="text-sm font-medium text-gray-700 mb-2">Test Accounts:</p>
                                 <div class="text-xs text-gray-600 space-y-1">
@@ -199,288 +397,534 @@
             `;
         }
 
-        // Dashboard View
+        // ========================================
+        // VIEW: DASHBOARD
+        // ========================================
         function renderDashboard() {
             const { user } = state;
 
-            return `
-                <div class="min-h-screen bg-gray-50">
-                    <!-- Header -->
-                    <header class="bg-white shadow-sm border-b border-gray-200">
-                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div class="flex justify-between items-center py-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-white">calendar_month</span>
-                                    </div>
-                                    <div>
-                                        <h1 class="text-xl font-bold text-gray-900">VardiyaPro</h1>
-                                        <p class="text-xs text-gray-500">${user.role.toUpperCase()}</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center space-x-4">
-                                    <div class="text-right">
-                                        <p class="text-sm font-medium text-gray-900">${user.name}</p>
-                                        <p class="text-xs text-gray-500">${user.email}</p>
-                                    </div>
-                                    <button
-                                        onclick="logout()"
-                                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center space-x-2"
-                                    >
-                                        <span class="material-symbols-outlined text-sm">logout</span>
-                                        <span>Logout</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </header>
-
-                    <!-- Main Content -->
-                    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        ${renderDashboardContent()}
-                    </main>
-                </div>
-            `;
-        }
-
-        function renderDashboardContent() {
-            const { user } = state;
-
             if (user.role === 'employee') {
-                return renderEmployeeDashboard();
+                return renderLayout(renderEmployeeDashboard());
             } else {
-                return renderAdminManagerDashboard();
+                return renderLayout(renderAdminDashboard());
             }
         }
 
         function renderEmployeeDashboard() {
             return `
                 <div class="space-y-6">
-                    <!-- Welcome Card -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome, ${state.user.name}!</h2>
-                        <p class="text-gray-600">Here's your schedule and time tracking.</p>
+                        <p class="text-gray-600">Track your shifts and manage your time.</p>
                     </div>
 
-                    <!-- Clock In/Out Card -->
                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg p-8 text-white">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="text-2xl font-bold">Time Tracking</h3>
-                                <p class="text-blue-100 mt-1">Track your work hours</p>
-                            </div>
-                            <span class="material-symbols-outlined text-5xl">schedule</span>
-                        </div>
-
+                        <h3 class="text-2xl font-bold mb-6">Time Tracking</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <button
-                                onclick="showToast('Clock In feature - Connect to API endpoint: POST /assignments/:id/clock_in', 'info')"
-                                class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center justify-center space-x-2"
-                            >
-                                <span class="material-symbols-outlined">login</span>
-                                <span>Clock In</span>
+                            <button class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50">
+                                Clock In
                             </button>
-                            <button
-                                onclick="showToast('Clock Out feature - Connect to API endpoint: PATCH /time_entries/:id/clock_out', 'info')"
-                                class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center justify-center space-x-2"
-                            >
-                                <span class="material-symbols-outlined">logout</span>
-                                <span>Clock Out</span>
+                            <button class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50">
+                                Clock Out
                             </button>
-                        </div>
-
-                        <div class="mt-6 p-4 bg-white/10 rounded-lg backdrop-blur">
-                            <p class="text-sm text-blue-100">
-                                <strong>Note:</strong> Full Clock In/Out functionality requires fetching your current assignment from the API.
-                                This is a demo showing the UI structure.
-                            </p>
                         </div>
                     </div>
 
-                    <!-- Quick Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Upcoming Shifts</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">5</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-blue-500">event</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Hours This Week</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">32</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-green-500">schedule</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Total Shifts</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">48</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-purple-500">work</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- API Integration Note -->
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                        <div class="flex">
-                            <span class="material-symbols-outlined text-yellow-400">info</span>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    <strong>Demo Mode:</strong> This dashboard is showing static data.
-                                    Connect to GET /assignments?employee_id=${state.user.id} to load real shifts.
-                                </p>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-3 gap-6">
+                        ${renderStatCard('Upcoming Shifts', '5', 'event', 'blue')}
+                        ${renderStatCard('Hours This Week', '32', 'schedule', 'green')}
+                        ${renderStatCard('Total Shifts', '48', 'work', 'purple')}
                     </div>
                 </div>
             `;
         }
 
-        function renderAdminManagerDashboard() {
+        function renderAdminDashboard() {
             return `
                 <div class="space-y-6">
-                    <!-- Welcome Card -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome, ${state.user.name}!</h2>
                         <p class="text-gray-600">Manage your team's shifts and assignments.</p>
                     </div>
 
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Total Users</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">10</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-blue-500">group</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Active Shifts</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">114</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-green-500">calendar_today</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Assignments</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">119</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-purple-500">assignment</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Departments</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-1">3</p>
-                                </div>
-                                <span class="material-symbols-outlined text-4xl text-orange-500">apartment</span>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-4 gap-6">
+                        ${renderStatCard('Total Users', '10', 'group', 'blue')}
+                        ${renderStatCard('Active Shifts', '114', 'calendar_today', 'green')}
+                        ${renderStatCard('Assignments', '119', 'assignment', 'purple')}
+                        ${renderStatCard('Departments', '3', 'apartment', 'orange')}
                     </div>
 
-                    <!-- Quick Actions -->
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <button
-                                onclick="showToast('Create Shift - API: POST /shifts', 'info')"
-                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex flex-col items-center space-y-2"
-                            >
-                                <span class="material-symbols-outlined text-3xl text-blue-500">add_circle</span>
-                                <span class="text-sm font-medium text-gray-700">Create Shift</span>
+                        <div class="grid grid-cols-4 gap-4">
+                            <button onclick="navigateTo('shifts')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50">
+                                <span class="material-symbols-outlined text-3xl text-blue-500 mb-2">add_circle</span>
+                                <p class="text-sm font-medium">Create Shift</p>
                             </button>
-
-                            <button
-                                onclick="showToast('Manage Users - API: GET /users', 'info')"
-                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition flex flex-col items-center space-y-2"
-                            >
-                                <span class="material-symbols-outlined text-3xl text-green-500">group_add</span>
-                                <span class="text-sm font-medium text-gray-700">Manage Users</span>
+                            <button onclick="navigateTo('users')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50">
+                                <span class="material-symbols-outlined text-3xl text-green-500 mb-2">group_add</span>
+                                <p class="text-sm font-medium">Manage Users</p>
                             </button>
-
-                            <button
-                                onclick="showToast('View Reports - API: GET /reports/summary', 'info')"
-                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition flex flex-col items-center space-y-2"
-                            >
-                                <span class="material-symbols-outlined text-3xl text-purple-500">assessment</span>
-                                <span class="text-sm font-medium text-gray-700">View Reports</span>
+                            <button onclick="navigateTo('departments')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50">
+                                <span class="material-symbols-outlined text-3xl text-purple-500 mb-2">apartment</span>
+                                <p class="text-sm font-medium">Departments</p>
                             </button>
-
-                            <button
-                                onclick="showToast('Departments - API: GET /departments', 'info')"
-                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition flex flex-col items-center space-y-2"
-                            >
-                                <span class="material-symbols-outlined text-3xl text-orange-500">apartment</span>
-                                <span class="text-sm font-medium text-gray-700">Departments</span>
+                            <button onclick="navigateTo('assignments')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50">
+                                <span class="material-symbols-outlined text-3xl text-orange-500 mb-2">assignment</span>
+                                <p class="text-sm font-medium">Assignments</p>
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- API Integration Note -->
-                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                        <div class="flex">
-                            <span class="material-symbols-outlined text-blue-400">info</span>
-                            <div class="ml-3">
-                                <p class="text-sm text-blue-700">
-                                    <strong>Demo Mode:</strong> This dashboard shows seed data.
-                                    Full functionality requires connecting to API endpoints (GET /shifts, /assignments, /users, etc.)
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Event Handlers
+        function renderStatCard(title, value, icon, color) {
+            const colors = {
+                blue: 'text-blue-500',
+                green: 'text-green-500',
+                purple: 'text-purple-500',
+                orange: 'text-orange-500'
+            };
+
+            return `
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">${title}</p>
+                            <p class="text-3xl font-bold text-gray-900 mt-1">${value}</p>
+                        </div>
+                        <span class="material-symbols-outlined text-4xl ${colors[color]}">${icon}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // VIEW: DEPARTMENTS
+        // ========================================
+        async function renderDepartments() {
+            const departments = await fetchDepartments();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Departments</h2>
+                            <p class="text-gray-600">Manage organization departments</p>
+                        </div>
+                        <button
+                            onclick="showCreateDepartmentModal()"
+                            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                        >
+                            <span class="material-symbols-outlined">add</span>
+                            <span>Create Department</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${departments.map(dept => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="font-medium text-gray-900">${dept.name}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-600">${dept.description || 'N/A'}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full ${dept.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                                ${dept.active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button
+                                                onclick="showEditDepartmentModal(${dept.id}, '${dept.name.replace(/'/g, "\\'")}', '${(dept.description || '').replace(/'/g, "\\'")}')"
+                                                class="text-primary hover:text-blue-700"
+                                            >
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        function showCreateDepartmentModal() {
+            showModal(`
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Create Department</h3>
+                    <form onsubmit="handleCreateDepartment(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                placeholder="e.g., Sales"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea
+                                name="description"
+                                rows="3"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                placeholder="Optional description"
+                            ></textarea>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-700">
+                                Create
+                            </button>
+                            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        function showEditDepartmentModal(id, name, description) {
+            showModal(`
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Edit Department</h3>
+                    <form onsubmit="handleEditDepartment(event, ${id})" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                value="${name}"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea
+                                name="description"
+                                rows="3"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                            >${description}</textarea>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-700">
+                                Update
+                            </button>
+                            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        async function handleCreateDepartment(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const name = formData.get('name');
+            const description = formData.get('description');
+
+            try {
+                await createDepartment(name, description);
+                closeModal();
+                navigateTo('departments');
+            } catch (error) {
+                // Error already shown in createDepartment
+            }
+        }
+
+        async function handleEditDepartment(event, id) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const name = formData.get('name');
+            const description = formData.get('description');
+
+            try {
+                await updateDepartment(id, name, description);
+                closeModal();
+                navigateTo('departments');
+            } catch (error) {
+                // Error already shown in updateDepartment
+            }
+        }
+
+        // ========================================
+        // VIEW: USERS
+        // ========================================
+        async function renderUsers() {
+            const users = await fetchUsers();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Users</h2>
+                            <p class="text-gray-600">Manage system users</p>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+                            <span class="material-symbols-outlined">add</span>
+                            <span>Add User</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${users.map(user => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="font-medium text-gray-900">${user.name}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-600">${user.email}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                                ${user.role.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full ${user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                                ${user.active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-primary hover:text-blue-700 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-800">Deactivate</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        // ========================================
+        // VIEW: SHIFTS
+        // ========================================
+        async function renderShifts() {
+            const shifts = await fetchShifts();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Shifts</h2>
+                            <p class="text-gray-600">Manage shift schedules</p>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+                            <span class="material-symbols-outlined">add</span>
+                            <span>Create Shift</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${shifts.slice(0, 10).map(shift => `
+                                    <tr>
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-gray-900">${shift.title || 'N/A'}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                                                ${shift.shift_type}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${new Date(shift.start_time).toLocaleDateString()}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${new Date(shift.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} -
+                                            ${new Date(shift.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${shift.department?.name || 'N/A'}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-primary hover:text-blue-700 mr-3">View</button>
+                                            <button class="text-green-600 hover:text-green-800">Edit</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        // ========================================
+        // VIEW: ASSIGNMENTS
+        // ========================================
+        async function renderAssignments() {
+            const assignments = await fetchAssignments();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Assignments</h2>
+                            <p class="text-gray-600">Manage shift assignments</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shift</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${assignments.slice(0, 15).map(assignment => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="font-medium text-gray-900">${assignment.employee?.name || 'N/A'}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-600">${assignment.shift?.title || `Shift #${assignment.shift_id}`}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${assignment.shift?.start_time ? new Date(assignment.shift.start_time).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full ${
+                                                assignment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                assignment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                assignment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-red-100 text-red-800'
+                                            }">
+                                                ${assignment.status}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            ${assignment.status === 'pending' ? `
+                                                <button class="text-green-600 hover:text-green-800 mr-3">Confirm</button>
+                                                <button class="text-red-600 hover:text-red-800">Cancel</button>
+                                            ` : '<span class="text-gray-400">-</span>'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        // ========================================
+        // LAYOUT WRAPPER
+        // ========================================
+        function renderLayout(content) {
+            return `
+                <div class="flex h-screen">
+                    ${renderSidebar()}
+                    <main class="flex-1 overflow-y-auto p-8">
+                        ${content}
+                    </main>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // EVENT HANDLERS
+        // ========================================
         function handleLogin(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            const email = formData.get('email');
-            const password = formData.get('password');
-            login(email, password);
+            login(formData.get('email'), formData.get('password'));
         }
 
-        // Main Render Function
-        function render() {
+        // ========================================
+        // MAIN RENDER FUNCTION
+        // ========================================
+        async function render() {
             const app = document.getElementById('app');
 
             if (!state.token || !state.user) {
                 app.innerHTML = renderLogin();
-            } else {
-                app.innerHTML = renderDashboard();
+                return;
             }
+
+            let content = '';
+
+            switch (state.currentView) {
+                case 'dashboard':
+                    content = renderDashboard();
+                    break;
+                case 'departments':
+                    content = await renderDepartments();
+                    break;
+                case 'users':
+                    content = await renderUsers();
+                    break;
+                case 'shifts':
+                    content = await renderShifts();
+                    break;
+                case 'assignments':
+                    content = await renderAssignments();
+                    break;
+                default:
+                    content = renderDashboard();
+            }
+
+            app.innerHTML = content;
         }
 
-        // Initialize App
+        // ========================================
+        // INITIALIZE APP
+        // ========================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if user is already logged in
             if (state.token && state.user) {
-                showView('dashboard');
+                state.currentView = window.location.hash.slice(1) || 'dashboard';
             } else {
-                showView('login');
+                state.currentView = 'login';
             }
+            render();
         });
     </script>
 </body>
