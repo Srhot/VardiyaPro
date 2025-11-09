@@ -1,0 +1,21 @@
+{
+  "name": "vardiyapro-tests",
+  "version": "1.0.0",
+  "description": "BDD-style Playwright tests for VardiyaPro shift management system",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:video": "playwright test --video=on",
+    "test:trace": "playwright test --trace=on"
+  },
+  "keywords": ["playwright", "testing", "bdd", "e2e"],
+  "author": "VardiyaPro Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@axe-core/playwright": "^4.8.0"
+  }
+}

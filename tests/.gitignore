@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+package-lock.json
+
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Videos and screenshots
+*.webm
+*.mp4
+*.png
+
+# Trace files
+*.zip
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
