@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VardiyaPro - Shift Management System</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#4F46E5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-size: 24px;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- App Container -->
+    <div id="app"></div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://127.0.0.1:3000/api/v1';
+
+        // State Management
+        const state = {
+            token: localStorage.getItem('token'),
+            user: JSON.parse(localStorage.getItem('user') || 'null'),
+            currentView: 'login'
+        };
+
+        // API Helper
+        async function apiCall(endpoint, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(state.token && { 'Authorization': `Bearer ${state.token}` })
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: { ...headers, ...options.headers }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.errors ? data.errors.join(', ') : 'Request failed');
+                }
+
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Authentication
+        async function login(email, password) {
+            try {
+                const data = await apiCall('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+
+                state.token = data.token;
+                state.user = data.user;
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                showView('dashboard');
+                showToast('Welcome back, ' + data.user.name + '!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function logout() {
+            state.token = null;
+            state.user = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            showView('login');
+            showToast('Logged out successfully', 'success');
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Views
+        function showView(view) {
+            state.currentView = view;
+            render();
+        }
+
+        // Login View
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+                    <div class="max-w-md w-full">
+                        <!-- Logo -->
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
+                                <span class="material-symbols-outlined text-white text-3xl">calendar_month</span>
+                            </div>
+                            <h1 class="text-3xl font-bold text-gray-900">VardiyaPro</h1>
+                            <p class="text-gray-600 mt-2">Shift Management System</p>
+                        </div>
+
+                        <!-- Login Form -->
+                        <div class="bg-white rounded-xl shadow-lg p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Sign In</h2>
+
+                            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        placeholder="admin@vardiyapro.com"
+                                        value="admin@vardiyapro.com"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        placeholder="Enter your password"
+                                        value="password123"
+                                    >
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+                                >
+                                    Sign In
+                                </button>
+                            </form>
+
+                            <!-- Test Credentials -->
+                            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Test Accounts:</p>
+                                <div class="text-xs text-gray-600 space-y-1">
+                                    <p><strong>Admin:</strong> admin@vardiyapro.com / password123</p>
+                                    <p><strong>Manager:</strong> manager1@vardiyapro.com / password123</p>
+                                    <p><strong>Employee:</strong> employee1@vardiyapro.com / password123</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Dashboard View
+        function renderDashboard() {
+            const { user } = state;
+
+            return `
+                <div class="min-h-screen bg-gray-50">
+                    <!-- Header -->
+                    <header class="bg-white shadow-sm border-b border-gray-200">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="flex justify-between items-center py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white">calendar_month</span>
+                                    </div>
+                                    <div>
+                                        <h1 class="text-xl font-bold text-gray-900">VardiyaPro</h1>
+                                        <p class="text-xs text-gray-500">${user.role.toUpperCase()}</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-right">
+                                        <p class="text-sm font-medium text-gray-900">${user.name}</p>
+                                        <p class="text-xs text-gray-500">${user.email}</p>
+                                    </div>
+                                    <button
+                                        onclick="logout()"
+                                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center space-x-2"
+                                    >
+                                        <span class="material-symbols-outlined text-sm">logout</span>
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <!-- Main Content -->
+                    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        ${renderDashboardContent()}
+                    </main>
+                </div>
+            `;
+        }
+
+        function renderDashboardContent() {
+            const { user } = state;
+
+            if (user.role === 'employee') {
+                return renderEmployeeDashboard();
+            } else {
+                return renderAdminManagerDashboard();
+            }
+        }
+
+        function renderEmployeeDashboard() {
+            return `
+                <div class="space-y-6">
+                    <!-- Welcome Card -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome, ${state.user.name}!</h2>
+                        <p class="text-gray-600">Here's your schedule and time tracking.</p>
+                    </div>
+
+                    <!-- Clock In/Out Card -->
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg p-8 text-white">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold">Time Tracking</h3>
+                                <p class="text-blue-100 mt-1">Track your work hours</p>
+                            </div>
+                            <span class="material-symbols-outlined text-5xl">schedule</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <button
+                                onclick="showToast('Clock In feature - Connect to API endpoint: POST /assignments/:id/clock_in', 'info')"
+                                class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center justify-center space-x-2"
+                            >
+                                <span class="material-symbols-outlined">login</span>
+                                <span>Clock In</span>
+                            </button>
+                            <button
+                                onclick="showToast('Clock Out feature - Connect to API endpoint: PATCH /time_entries/:id/clock_out', 'info')"
+                                class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center justify-center space-x-2"
+                            >
+                                <span class="material-symbols-outlined">logout</span>
+                                <span>Clock Out</span>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-white/10 rounded-lg backdrop-blur">
+                            <p class="text-sm text-blue-100">
+                                <strong>Note:</strong> Full Clock In/Out functionality requires fetching your current assignment from the API.
+                                This is a demo showing the UI structure.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Upcoming Shifts</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">5</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-blue-500">event</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Hours This Week</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">32</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-green-500">schedule</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Total Shifts</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">48</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-purple-500">work</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Integration Note -->
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                        <div class="flex">
+                            <span class="material-symbols-outlined text-yellow-400">info</span>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    <strong>Demo Mode:</strong> This dashboard is showing static data.
+                                    Connect to GET /assignments?employee_id=${state.user.id} to load real shifts.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminManagerDashboard() {
+            return `
+                <div class="space-y-6">
+                    <!-- Welcome Card -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome, ${state.user.name}!</h2>
+                        <p class="text-gray-600">Manage your team's shifts and assignments.</p>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Total Users</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">10</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-blue-500">group</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Active Shifts</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">114</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-green-500">calendar_today</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Assignments</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">119</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-purple-500">assignment</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">Departments</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1">3</p>
+                                </div>
+                                <span class="material-symbols-outlined text-4xl text-orange-500">apartment</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button
+                                onclick="showToast('Create Shift - API: POST /shifts', 'info')"
+                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex flex-col items-center space-y-2"
+                            >
+                                <span class="material-symbols-outlined text-3xl text-blue-500">add_circle</span>
+                                <span class="text-sm font-medium text-gray-700">Create Shift</span>
+                            </button>
+
+                            <button
+                                onclick="showToast('Manage Users - API: GET /users', 'info')"
+                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition flex flex-col items-center space-y-2"
+                            >
+                                <span class="material-symbols-outlined text-3xl text-green-500">group_add</span>
+                                <span class="text-sm font-medium text-gray-700">Manage Users</span>
+                            </button>
+
+                            <button
+                                onclick="showToast('View Reports - API: GET /reports/summary', 'info')"
+                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition flex flex-col items-center space-y-2"
+                            >
+                                <span class="material-symbols-outlined text-3xl text-purple-500">assessment</span>
+                                <span class="text-sm font-medium text-gray-700">View Reports</span>
+                            </button>
+
+                            <button
+                                onclick="showToast('Departments - API: GET /departments', 'info')"
+                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition flex flex-col items-center space-y-2"
+                            >
+                                <span class="material-symbols-outlined text-3xl text-orange-500">apartment</span>
+                                <span class="text-sm font-medium text-gray-700">Departments</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- API Integration Note -->
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                        <div class="flex">
+                            <span class="material-symbols-outlined text-blue-400">info</span>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">
+                                    <strong>Demo Mode:</strong> This dashboard shows seed data.
+                                    Full functionality requires connecting to API endpoints (GET /shifts, /assignments, /users, etc.)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Event Handlers
+        function handleLogin(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            login(email, password);
+        }
+
+        // Main Render Function
+        function render() {
+            const app = document.getElementById('app');
+
+            if (!state.token || !state.user) {
+                app.innerHTML = renderLogin();
+            } else {
+                app.innerHTML = renderDashboard();
+            }
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            if (state.token && state.user) {
+                showView('dashboard');
+            } else {
+                showView('login');
+            }
+        });
+    </script>
+</body>
+</html>
