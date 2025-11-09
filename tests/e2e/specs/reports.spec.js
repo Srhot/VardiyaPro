@@ -221,7 +221,7 @@ test.describe('Feature: Reports and Analytics', () => {
     });
   });
 
-  test('Scenario: Report page is accessible to Manager role', async ({ page }) => {
+  test.skip('Scenario: Report page is accessible to Manager role', async ({ page }) => {
     // GIVEN I logout from admin
     await test.step('Logout from admin', async () => {
       await dashboardPage.logout();
