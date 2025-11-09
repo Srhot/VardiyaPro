@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assign Employees - VardiyaPro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2463eb",
+              "background-light": "#f6f6f8",
+              "background-dark": "#111621",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        --checkbox-tick-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(255,255,255)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e');
+      }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1F2937] dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4" style='font-family: Inter, "Noto Sans", sans-serif;'>
+<!-- Modal Container -->
+<div class="flex h-full w-full max-w-2xl flex-col rounded-xl bg-white dark:bg-[#181e29] shadow-2xl">
+<!-- Modal Header -->
+<div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E7EB] dark:border-gray-700 p-4 sm:p-6">
+<div class="flex flex-col">
+<h2 class="text-[#1F2937] dark:text-white text-xl font-bold tracking-tight">Assign Employees</h2>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm">Morning Shift - June 24, 2024</p>
+</div>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[#6B7280] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="flex flex-col p-4 sm:p-6">
+<!-- SearchBar -->
+<div class="mb-4">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#6B7280] dark:text-gray-400 flex border-y border-l border-[#E5E7EB] dark:border-gray-700 bg-background-light dark:bg-[#202737] items-center justify-center pl-4 rounded-l-lg">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-[#1F2937] dark:text-white bg-background-light dark:bg-[#202737] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 border-y border-r border-[#E5E7EB] dark:border-gray-700 h-full placeholder:text-[#6B7280] dark:placeholder-gray-400 px-4 text-base font-normal leading-normal" placeholder="Search by name or role..." value=""/>
+</div>
+</label>
+</div>
+<!-- Employee List -->
+<div class="flex flex-col space-y-2 max-h-[40vh] overflow-y-auto pr-2">
+<!-- ListItem -->
+<div class="flex items-center gap-4 rounded-lg bg-background-light dark:bg-[#202737] px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<img class="rounded-full h-12 w-12 object-cover" data-alt="Profile picture of Wade Warren" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyaSCAbWJRvuFe-m2rlG5LrC16zD9q7Pc3z3sMPA9j_Hjk8TZanPXkT4RksXsTNbY2DOXgQ3pPpfmaKsZ87OGhRXSEpYusOYRnUrHYtpKv71ObbgX6Z-NKo9QpYDGKtiN4zDsWZV4CoEHTh9DxwwlOIx9sXAZXaDh2wEXttrnyPUjAiwInGgVvqkv2d07jF5Mj0m--e6S-ByPqBBXPJee8AgHkkfU_waoVMIo6NpKTyhEMom7K_CTDWgStXjT1EjUBxiPmxFnQrxZ"/>
+<div class="flex flex-col justify-center">
+<p class="text-[#1F2937] dark:text-white text-base font-medium leading-normal line-clamp-1">Wade Warren</p>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">Barista</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<input checked="" class="h-5 w-5 rounded border-[#d0d7e7] dark:border-gray-600 border-2 bg-transparent text-primary checked:bg-primary checked:border-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-gray-800 focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- ListItem -->
+<div class="flex items-center gap-4 rounded-lg bg-background-light dark:bg-[#202737] px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<img class="rounded-full h-12 w-12 object-cover" data-alt="Profile picture of Eleanor Pena" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUT1IrpMXD7PASOA0W2ivAjdJ4OcVg557HyEjD4iTy5v1BCri119CGI3H4V2C9suBympbBMvUVqyjizZyS8K9nzXFO-CzfYsxjuK_6hMuP45sUyyxhf6GkjwLptE4VX9M0KVwW7kqG-Sr-ATpxa840RjESx-u8XM8WAu346IHPXCTdTtrVoYqS8s_3wGns9CSbnQmICUPG0UIk6r63obrFvJ8w14BNkFJmErnzz_gvxDcpY1Kr_xHaym0MoEhED5tfkCnKjREERhrp"/>
+<div class="flex flex-col justify-center">
+<p class="text-[#1F2937] dark:text-white text-base font-medium leading-normal line-clamp-1">Eleanor Pena</p>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">Cashier</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<input class="h-5 w-5 rounded border-[#d0d7e7] dark:border-gray-600 border-2 bg-transparent text-primary checked:bg-primary checked:border-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-gray-800 focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- ListItem -->
+<div class="flex items-center gap-4 rounded-lg bg-background-light dark:bg-[#202737] px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<img class="rounded-full h-12 w-12 object-cover" data-alt="Profile picture of Cameron Williamson" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1E4ewCpU31MWOJrcX7FHt-PfCUvqy7O80YyzvusQEI9vgsrV1R4EkUMKGqG185-s0iUoVZIATwEVKfDttYX85sMALcEajwxOTq4Al3ekLArqWxhcN265cjAd8y_YhRDTl8PsZaBLEYS_S3u1XF2Tej0Lne40BYFiThVvGtBVE-1vlJjObE1I5T6kPOQCeju5zofK9HsJ6ti370XyXvSqBXBUR6i1xcRg9yzriA6V4-I1Tq4XpCBCEe2DKWtDpbv5rjlEBn7KAX-So"/>
+<div class="flex flex-col justify-center">
+<p class="text-[#1F2937] dark:text-white text-base font-medium leading-normal line-clamp-1">Cameron Williamson</p>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">Stocker</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<input checked="" class="h-5 w-5 rounded border-[#d0d7e7] dark:border-gray-600 border-2 bg-transparent text-primary checked:bg-primary checked:border-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-gray-800 focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- ListItem -->
+<div class="flex items-center gap-4 rounded-lg bg-background-light dark:bg-[#202737] px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<img class="rounded-full h-12 w-12 object-cover" data-alt="Profile picture of Jane Cooper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDsAYie_W6AYWAs2XiljqF4ncrfFpmZ4-psqAt3IAKfd3CEjq9f05APKb6LhzKBJifSEzhqdAOS_9SDb8IcWdb2TyKfRsVfFAJMVlPs_V4HytVph7VfHe9DGm9CXyV5Sn7SP-pFHSoBZMad8GATERoEuc6yKxPoStEjSsE7jeJTtCP_tPL7OFnHkLDMBSRpnvq61bctqL8n0qyCoQYpFAZN1M8A8z06lGASb_crSLlDbCSqM6UXQIoLb1qrB9RgwmiIrzKHKtcaZXZ"/>
+<div class="flex flex-col justify-center">
+<p class="text-[#1F2937] dark:text-white text-base font-medium leading-normal line-clamp-1">Jane Cooper</p>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">Shift Lead</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<input class="h-5 w-5 rounded border-[#d0d7e7] dark:border-gray-600 border-2 bg-transparent text-primary checked:bg-primary checked:border-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-gray-800 focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- ListItem -->
+<div class="flex items-center gap-4 rounded-lg bg-background-light dark:bg-[#202737] px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<img class="rounded-full h-12 w-12 object-cover" data-alt="Profile picture of Robert Fox" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbKNK1tUgli6HQll8-7nSeEBFz0CNQnWfLPXmEzPuHUbETfr0p5w-GTZXkad_PUF92u1SiGxjpL-IXtxtgtEO0kw3bdGxF0QAcPgdDJmaS-dLR8Ux2leAbhH7qXkCXxlmTaCg8JR9qC6YYhU4q5vCQqLxulstFZ4bDc8aZHAPPUYsGzuC-saK3jjstoCARF9uO-jKcC52FB6ssdc11nrCyhsxoYStBHFRGV9D_pqzAtxZKUJFevabV_5azps6byWFV77K3oeyesgY2"/>
+<div class="flex flex-col justify-center">
+<p class="text-[#1F2937] dark:text-white text-base font-medium leading-normal line-clamp-1">Robert Fox</p>
+<p class="text-[#6B7280] dark:text-gray-400 text-sm font-normal leading-normal line-clamp-2">Barista</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<input class="h-5 w-5 rounded border-[#d0d7e7] dark:border-gray-600 border-2 bg-transparent text-primary checked:bg-primary checked:border-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-gray-800 focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 border-t border-[#E5E7EB] dark:border-gray-700 p-4 sm:p-6">
+<button class="flex min-w-[84px] w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#6B7280] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="truncate">Cancel</span>
+</button>
+<button class="flex min-w-[84px] w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-medium leading-normal hover:bg-primary/90">
+<span class="truncate">Assign 2 Employees</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

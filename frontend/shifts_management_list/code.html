@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VardiyaPro - Shift Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2463eb",
+              "background-light": "#f8f9fa",
+              "background-dark": "#111621",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#343a40] dark:text-gray-300">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dee2e6] dark:border-gray-700 px-6 md:px-10 py-3 bg-white/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-[#343a40] dark:text-white">VardiyaPro</h2>
+</div>
+<div class="hidden md:flex flex-1 justify-end items-center gap-8">
+<div class="flex items-center gap-8">
+<a class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="text-primary dark:text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1" href="#">Shifts</a>
+<a class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal" href="#">Employees</a>
+<a class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal" href="#">Reports</a>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity">
+<span class="truncate">Create New Shift</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDv6McpvPn8DE6UUHwxE0KFvlvkVLIysalz2MlD0DhFlc0xjypfKWgZElTDbL01qJitE1CPr4cx1N_tBaVtELDm5qgGn49R6c2ac_vZKPhGhTwOpPTcCTruL_UIFofWviHUIjilqbQc81vHV2a2YGqBBhl43zSYsX6acEenps5iKY8HHscqMYpyyg0R4uE4oUyJUzHEYhd0e8FmaaxNSXSeeFP5WXZ7oBz-jWeJegDGUt81HWj2kEkeGRmbEHE3SJ2N28SA_PbR9I1i");'></div>
+</div>
+<button class="md:hidden text-[#343a40] dark:text-gray-300">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<h1 class="text-[#0e121b] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Shift Management</h1>
+</div>
+<div class="bg-white dark:bg-gray-800/50 rounded-lg p-6 mb-6 border border-[#dee2e6] dark:border-gray-700">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<label class="flex flex-col">
+<p class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal pb-2">From</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#343a40] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#dee2e6] dark:border-gray-600 bg-background-light dark:bg-gray-700 h-12 placeholder:text-gray-400 p-3 text-sm font-normal leading-normal" type="date" value="2024-07-28"/>
+</label>
+<label class="flex flex-col">
+<p class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal pb-2">To</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#343a40] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#dee2e6] dark:border-gray-600 bg-background-light dark:bg-gray-700 h-12 placeholder:text-gray-400 p-3 text-sm font-normal leading-normal" type="date" value="2024-08-03"/>
+</label>
+<label class="flex flex-col">
+<p class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal pb-2">Department</p>
+<div class="relative flex w-full flex-1 items-stretch rounded-lg">
+<select class="form-select w-full appearance-none rounded-lg text-[#343a40] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#dee2e6] dark:border-gray-600 bg-background-light dark:bg-gray-700 h-12 placeholder:text-gray-400 px-3 text-sm font-normal leading-normal">
+<option>All Departments</option>
+<option>Sales</option>
+<option>Engineering</option>
+<option>Support</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+</div>
+</label>
+<label class="flex flex-col">
+<p class="text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal pb-2">Shift Type</p>
+<div class="relative flex w-full flex-1 items-stretch rounded-lg">
+<select class="form-select w-full appearance-none rounded-lg text-[#343a40] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#dee2e6] dark:border-gray-600 bg-background-light dark:bg-gray-700 h-12 placeholder:text-gray-400 px-3 text-sm font-normal leading-normal">
+<option>All Types</option>
+<option>Morning</option>
+<option>Evening</option>
+<option>Night</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+</div>
+</label>
+</div>
+<div class="flex justify-end items-center gap-3 mt-4">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#343a40] dark:text-gray-300 text-sm font-medium leading-normal hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Clear Filters</button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity">Apply Filters</button>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 rounded-lg border border-[#dee2e6] dark:border-gray-700 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+<thead class="text-xs text-[#343a40] dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700/50">
+<tr>
+<th class="p-4" scope="col"><input class="form-checkbox rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="px-6 py-3" scope="col">Title</th>
+<th class="px-6 py-3" scope="col">Department</th>
+<th class="px-6 py-3" scope="col">Shift Type</th>
+<th class="px-6 py-3" scope="col">Date</th>
+<th class="px-6 py-3" scope="col">Time</th>
+<th class="px-6 py-3" scope="col">Staffing</th>
+<th class="px-6 py-3 text-right" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-white dark:bg-gray-800/50 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="w-4 p-4"><input class="form-checkbox rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/></td>
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">Frontend Team Sync</th>
+<td class="px-6 py-4">Engineering</td>
+<td class="px-6 py-4"><span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Morning</span></td>
+<td class="px-6 py-4">2024-07-29</td>
+<td class="px-6 py-4">09:00 - 17:00</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-20 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+<div class="bg-primary h-2.5 rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-medium text-gray-700 dark:text-gray-300">5 / 5</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">visibility</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">edit</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-red-500"><span class="material-symbols-outlined text-base">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800/50 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="w-4 p-4"><input class="form-checkbox rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/></td>
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">Evening Sales Cover</th>
+<td class="px-6 py-4">Sales</td>
+<td class="px-6 py-4"><span class="bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Evening</span></td>
+<td class="px-6 py-4">2024-07-29</td>
+<td class="px-6 py-4">16:00 - 23:00</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-20 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+<div class="bg-yellow-400 h-2.5 rounded-full" style="width: 66%"></div>
+</div>
+<span class="font-medium text-gray-700 dark:text-gray-300">2 / 3</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">visibility</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">edit</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-red-500"><span class="material-symbols-outlined text-base">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800/50 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="w-4 p-4"><input class="form-checkbox rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/></td>
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">Overnight Support</th>
+<td class="px-6 py-4">Support</td>
+<td class="px-6 py-4"><span class="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Night</span></td>
+<td class="px-6 py-4">2024-07-30</td>
+<td class="px-6 py-4">23:00 - 07:00</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-20 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+<div class="bg-red-500 h-2.5 rounded-full" style="width: 25%"></div>
+</div>
+<span class="font-medium text-gray-700 dark:text-gray-300">1 / 4</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">visibility</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">edit</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-red-500"><span class="material-symbols-outlined text-base">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="w-4 p-4"><input class="form-checkbox rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/></td>
+<th class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap" scope="row">Warehouse Morning Stock</th>
+<td class="px-6 py-4">Logistics</td>
+<td class="px-6 py-4"><span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Morning</span></td>
+<td class="px-6 py-4">2024-07-31</td>
+<td class="px-6 py-4">06:00 - 14:00</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-20 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+<div class="bg-green-500 h-2.5 rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-medium text-gray-700 dark:text-gray-300">8 / 8</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">visibility</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><span class="material-symbols-outlined text-base">edit</span></button>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-red-500"><span class="material-symbols-outlined text-base">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<nav aria-label="Table navigation" class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4">
+<span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        Showing
+                        <span class="font-semibold text-gray-900 dark:text-white">1-10</span>
+                        of
+                        <span class="font-semibold text-gray-900 dark:text-white">100</span>
+</span>
+<ul class="inline-flex items-stretch -space-x-px">
+<li>
+<a class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">
+<span class="sr-only">Previous</span>
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</a>
+</li>
+<li>
+<a class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">1</a>
+</li>
+<li>
+<a class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">2</a>
+</li>
+<li>
+<a aria-current="page" class="z-10 flex items-center justify-center text-sm py-2 px-3 leading-tight text-primary bg-primary/20 border border-primary hover:bg-primary/30 dark:border-gray-700 dark:bg-gray-700 dark:text-white" href="#">3</a>
+</li>
+<li>
+<a class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">...</a>
+</li>
+<li>
+<a class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">10</a>
+</li>
+<li>
+<a class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" href="#">
+<span class="sr-only">Next</span>
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</main>
+</div>
+</body></html>

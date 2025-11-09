@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VardiyaPro - Create Shift</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "error": "#E53E3E"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex min-h-screen w-full">
+<!-- SideNavBar -->
+<aside class="flex h-screen flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark p-4 w-64 sticky top-0">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="VardiyaPro company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAl46DAk0gjm_U0tQeyn9mGYOu9T9UsEWZQ7-i-KdjGhUZRMrkLLtyeiN5dQOiHbhAsLOFqdNycTyREjyWvlsA0zHefjmqdgW1gVwODbnfVGu2s5x6_2ptG_d3CFMXLm_C9KxQ3j0rsqojt_c37l6pKuiem0s2r0fqPLmr0pblEqVyFQPfXI12K90fjbV56QTzjw3gPg1XZBSh7pvVMXBAg7ajOglmFm6Hh2I_3dqcMU0ZRr-Y42imB8H8e8bFTpRWUB1BeVwCROt6g");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">VardiyaPro</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Shift Management</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<p class="text-sm font-medium leading-normal">Schedule</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<p class="text-sm font-medium leading-normal">Shifts</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<p class="text-sm font-medium leading-normal">Employees</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Create Shift</span>
+</button>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8">
+<div class="max-w-4xl mx-auto">
+<!-- PageHeading -->
+<div class="mb-8">
+<h1 class="text-slate-900 dark:text-slate-100 text-4xl font-black leading-tight tracking-[-0.033em]">Create New Shift</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-2">Fill in the details below to schedule a new shift.</p>
+</div>
+<!-- Form Container -->
+<div class="bg-white dark:bg-slate-900/50 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<form class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
+<!-- Left Column -->
+<div class="flex flex-col gap-6">
+<!-- Department -->
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2" for="department">Department</label>
+<select class="form-select w-full rounded-lg text-slate-900 dark:text-slate-200 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-14 placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal" id="department">
+<option>Select a department</option>
+<option>Engineering</option>
+<option>Support</option>
+<option>Sales</option>
+</select>
+</div>
+<!-- Shift Type -->
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2">Shift Type</label>
+<div class="flex h-14 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-900 has-[:checked]:shadow-sm has-[:checked]:text-slate-900 dark:has-[:checked]:text-slate-100 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">
+<span class="truncate">Morning</span>
+<input checked="" class="invisible w-0" name="shift-type" type="radio" value="Morning"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-900 has-[:checked]:shadow-sm has-[:checked]:text-slate-900 dark:has-[:checked]:text-slate-100 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">
+<span class="truncate">Evening</span>
+<input class="invisible w-0" name="shift-type" type="radio" value="Evening"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-900 has-[:checked]:shadow-sm has-[:checked]:text-slate-900 dark:has-[:checked]:text-slate-100 text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">
+<span class="truncate">Night</span>
+<input class="invisible w-0" name="shift-type" type="radio" value="Night"/>
+</label>
+</div>
+</div>
+<!-- Start & End Time -->
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2" for="start-time">Start Time</label>
+<input class="form-input w-full rounded-lg text-slate-900 dark:text-slate-200 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-14 placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal" id="start-time" type="time"/>
+</div>
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2" for="end-time">End Time</label>
+<input class="form-input w-full rounded-lg text-slate-900 dark:text-slate-200 border border-error dark:border-error bg-background-light dark:bg-background-dark focus:border-error focus:ring-error h-14 placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal" id="end-time" type="time"/>
+<p class="text-error text-sm mt-1">End time must be after start time.</p>
+</div>
+</div>
+<!-- Required Staff -->
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2" for="required-staff">Required Staff</label>
+<input class="form-input w-full rounded-lg text-slate-900 dark:text-slate-200 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-14 placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal" id="required-staff" placeholder="e.g., 5" type="number"/>
+</div>
+<!-- Description -->
+<div class="lg:col-span-2">
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2" for="description">Description <span class="text-slate-500">(Optional)</span></label>
+<textarea class="form-textarea w-full rounded-lg text-slate-900 dark:text-slate-200 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal resize-none" id="description" placeholder="Add any relevant details..." rows="4"></textarea>
+</div>
+</div>
+<!-- Right Column (Calendar) -->
+<div class="flex flex-col gap-6">
+<div>
+<label class="block text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2">Date</label>
+<div class="rounded-lg border border-slate-300 dark:border-slate-700 p-4">
+<div class="flex min-w-72 flex-1 flex-col gap-0.5">
+<div class="flex items-center p-1 justify-between">
+<button class="text-slate-900 dark:text-slate-100 flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800" type="button">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight flex-1 text-center">October 2024</p>
+<button class="text-slate-900 dark:text-slate-100 flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800" type="button">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7">
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">S</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">M</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">W</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">F</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">S</p>
+<div class="h-12 w-full text-slate-400 dark:text-slate-600 col-start-3 text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">1</div></div>
+<div class="h-12 w-full text-slate-400 dark:text-slate-600 text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">2</div></div>
+<div class="h-12 w-full text-slate-400 dark:text-slate-600 text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">3</div></div>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">4</div></button>
+<button class="h-12 w-full text-white text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full bg-primary">5</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">6</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">7</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">8</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">9</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">10</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">11</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">12</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">13</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">14</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">15</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">16</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">17</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">18</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">19</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">20</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">21</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">22</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">23</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">24</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">25</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">26</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">27</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">28</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">29</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">30</div></button>
+<button class="h-12 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" type="button"><div class="flex size-full items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">31</div></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="lg:col-span-2 flex justify-end items-center gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-700" type="button">
+<span class="truncate">Cancel</span>
+</button>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed" type="submit">
+<span class="truncate">Create Shift</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</div>
+</body></html>

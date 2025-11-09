@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Department - VardiyaPro</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#2463eb",
+            "background-light": "#f6f6f8",
+            "background-dark": "#111621",
+            "vardiya-blue": "#007BFF",
+            "vardiya-grey": "#6C757D",
+            "vardiya-charcoal": "#212529",
+            "vardiya-red": "#DC3545",
+            "vardiya-green": "#28A745",
+            "vardiya-off-white": "#F8F9FA",
+            "vardiya-white": "#FFFFFF",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-display">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark group/design-root" style="--checkbox-tick-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(255,255,255)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e');">
+<div aria-hidden="true" class="fixed inset-0 bg-black/30 z-10"></div>
+<main class="relative z-20 flex w-full max-w-lg flex-col rounded-xl bg-vardiya-white shadow-xl dark:bg-background-dark">
+<div class="p-6 sm:p-8">
+<h1 class="text-vardiya-charcoal dark:text-white tracking-light text-2xl font-bold leading-tight">Create New Department</h1>
+</div>
+<div class="flex-1 space-y-6 px-6 pb-6 sm:px-8 sm:pb-8">
+<!-- Error Message Banner -->
+<div class="flex gap-x-3 rounded-lg border border-vardiya-red/30 bg-vardiya-red/10 p-4">
+<span class="material-symbols-outlined text-vardiya-red">error</span>
+<p class="text-sm font-medium text-vardiya-red">Department name already exists. Please try a different name.</p>
+</div>
+<div class="space-y-2">
+<label class="flex flex-col">
+<p class="pb-2 text-sm font-medium text-vardiya-charcoal dark:text-gray-300">Department Name<span class="text-vardiya-red">*</span></p>
+<input class="form-input flex w-full resize-none overflow-hidden rounded-lg border border-vardiya-red bg-vardiya-white text-vardiya-charcoal placeholder:text-vardiya-grey/70 focus:border-vardiya-blue focus:outline-0 focus:ring-2 focus:ring-vardiya-blue/20 dark:bg-background-dark dark:border-gray-600 dark:text-white h-11 p-3 text-sm font-normal" placeholder="e.g., Human Resources" value="Engineering"/>
+</label>
+<p class="px-1 pt-1 text-xs text-vardiya-red">Name must be at least 3 characters long.</p>
+</div>
+<div>
+<label class="flex flex-col">
+<p class="pb-2 text-sm font-medium text-vardiya-charcoal dark:text-gray-300">Description</p>
+<textarea class="form-input flex w-full resize-none overflow-hidden rounded-lg border border-gray-300 bg-vardiya-white text-vardiya-charcoal placeholder:text-vardiya-grey/70 focus:border-vardiya-blue focus:outline-0 focus:ring-2 focus:ring-vardiya-blue/20 dark:bg-background-dark dark:border-gray-600 dark:text-white min-h-[100px] p-3 text-sm font-normal" placeholder="e.g., Responsible for hiring and employee relations"></textarea>
+</label>
+</div>
+<div>
+<label class="flex items-center gap-x-3 py-2">
+<input checked="" class="h-5 w-5 rounded border-2 border-gray-300 bg-transparent text-vardiya-blue checked:border-vardiya-blue checked:bg-vardiya-blue checked:bg-[image:--checkbox-tick-svg] focus:outline-none focus:ring-2 focus:ring-vardiya-blue/30 focus:ring-offset-2 dark:border-gray-600 dark:focus:ring-offset-background-dark" type="checkbox"/>
+<p class="text-sm text-vardiya-charcoal dark:text-white">Set as Active</p>
+</label>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 rounded-b-xl bg-vardiya-off-white px-6 py-4 dark:bg-background-dark/50">
+<button class="flex items-center justify-center rounded-lg border border-gray-300 bg-vardiya-white px-4 py-2 text-sm font-semibold text-vardiya-charcoal shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-vardiya-grey/50 focus:ring-offset-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-offset-background-dark">Cancel</button>
+<button class="flex items-center justify-center rounded-lg border border-transparent bg-vardiya-blue px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-vardiya-blue/90 focus:outline-none focus:ring-2 focus:ring-vardiya-blue/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-background-dark" disabled="">
+<svg class="h-5 w-5 animate-spin text-white" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+<span class="ml-2">Creating...</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

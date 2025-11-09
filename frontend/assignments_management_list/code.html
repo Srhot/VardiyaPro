@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VardiyaPro - Shift Assignments</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "pending": "#FFC107",
+                        "confirmed": "#28A745",
+                        "completed": "#6C757D",
+                        "cancelled": "#DC3545"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-4 sm:px-6 lg:px-8 py-3 sticky top-0 z-10">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">VardiyaPro</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4 sm:gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="text-primary dark:text-primary text-sm font-bold leading-normal" href="#">Schedules</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Assignments</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Employees</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Reports</a>
+</nav>
+<div class="flex gap-2 items-center">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDVbY3QujNSftKqxOoUIIe3c3Mb3G15Iz4VAkfqkDiZh4eXUFQywpzPbzZIyU2WxE_j4aXTVxZayXT1t_vmVcSXj8GDSV9aoQcSnqfBgSi4t95XoajLZCp-E0Yj5MITsMgILQggd2QxQyWXK7wnVMKGEk75psn4M4EvvaWChXECVnlNiO1dln2eGumxnBhyPFNH1v8MwGqf6CXYRmoMh-q-6bfuaE4pv6YdJ7z7iWIdLd3ASkvoVRP7mWmEViuY4TQ4HDYSBpeKCxj3");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<p class="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Shift Assignments</p>
+<button class="flex items-center justify-center gap-2 h-10 px-4 bg-primary text-white rounded-lg text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>Create Assignment</span>
+</button>
+</div>
+<div class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Employee</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark h-10 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 text-sm font-normal leading-normal" placeholder="Select an employee" value=""/>
+</label>
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Date Range</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark h-10 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 text-sm font-normal leading-normal" placeholder="Select date range" value=""/>
+</label>
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Department</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark h-10 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 text-sm font-normal leading-normal" placeholder="Select a department" value=""/>
+</label>
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Status</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark h-10 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 text-sm font-normal leading-normal" placeholder="Select status" value=""/>
+</label>
+</div>
+<div class="flex flex-1 gap-3 flex-wrap pt-4 justify-start">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Apply Filters</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Clear</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl">
+<table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+<thead class="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-800">
+<tr>
+<th class="p-4" scope="col">
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" id="checkbox-all" type="checkbox"/>
+<label class="sr-only" for="checkbox-all">checkbox</label>
+</div>
+</th>
+<th class="px-6 py-3" scope="col">Employee</th>
+<th class="px-6 py-3" scope="col">Shift</th>
+<th class="px-6 py-3" scope="col">Date</th>
+<th class="px-6 py-3" scope="col">Status</th>
+<th class="px-6 py-3" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="w-4 p-4">
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" id="checkbox-table-1" type="checkbox"/>
+<label class="sr-only" for="checkbox-table-1">checkbox</label>
+</div>
+</td>
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full" data-alt="Employee avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI494B2IC_clRa0kqs3XDAcNvzZ10imxyzIYkN79Y74F6gNQqCrQLNrpsxwcfHVufr9_WH-wNxFIYu3k1PgyvoSvYA020sAZOzpGMBreGQl0Vm5pjn52VWi632rF01-tRYKh__rXv0pBVYv5EiOAUuOJaE7p_nDoUdNnD56jd-694r4SlNzxhBpIwzINB42BDbLRb0n51R-iAxc5LuzGC0qxSfWjxntxbjPL3LUVhMMrDTHqq4_XQPfQHYvrpVotIzwHTqoolvEcbV"/>
+<span>Olivia Rhye</span>
+</div>
+</td>
+<td class="px-6 py-4">Morning (08:00 - 16:00)</td>
+<td class="px-6 py-4">2023-10-26</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-confirmed/20 text-confirmed">Confirmed</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="border-b dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="w-4 p-4">
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" id="checkbox-table-2" type="checkbox"/>
+<label class="sr-only" for="checkbox-table-2">checkbox</label>
+</div>
+</td>
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full" data-alt="Employee avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC80Wy5EQ5vJUWyjQJZDkkyGpHzokWOdQ2epErcW6kLW6s-9z3VZYA-CwfPsFDT-6FeMytJng6DbPF7f6gzH8u33_PX2biMaqIYxc0cwKJy1cnA_TOs_Uvz1YmmlVXVLv1aC_g1Ih809HX7re87Q4J6wlgvJoIJclSCi8urtrOVt7beXA7mpnKNuaEjii3_thu4KcJHz-TEiGOrU8EUXxEnjp5zRFK6DgMtNTX83yG9FiKhUVucJmIY_EjbwpTPem1AqMPqOnD41cTk"/>
+<span>Phoenix Baker</span>
+</div>
+</td>
+<td class="px-6 py-4">Night (22:00 - 06:00)</td>
+<td class="px-6 py-4">2023-10-26</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pending/20 text-pending">Pending</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="border-b dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="w-4 p-4">
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" id="checkbox-table-3" type="checkbox"/>
+<label class="sr-only" for="checkbox-table-3">checkbox</label>
+</div>
+</td>
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full" data-alt="Employee avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB09s7tDLHAWJck_JI88PhqpTmMa54VRVd7Kl8ApszeeKX-GFoXsPAfxgzmWbakSJhCTRDhGlOsfmOqCh6CjnQt7eLzrOWCTfIVtj7Vh4ZXN6LoniaD_RRY4LRir1GcRy55a70GSqIs_bJ3-Q52bXGOxFgxw497YsOBeAffRHijS48JicdF4xkPQRxWuNq7VGRt6ptNE3dTjtkKQO6oFSR7BzitFGMiJfsJbyEwIDPV7nnHeNGn7E8aXUYq7EXep0H3kNv5E3e_rhB6"/>
+<span>Lana Steiner</span>
+</div>
+</td>
+<td class="px-6 py-4">Afternoon (14:00 - 22:00)</td>
+<td class="px-6 py-4">2023-10-25</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-completed/20 text-completed">Completed</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="w-4 p-4">
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600" id="checkbox-table-4" type="checkbox"/>
+<label class="sr-only" for="checkbox-table-4">checkbox</label>
+</div>
+</td>
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full" data-alt="Employee avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyp7RjsazAqv6uZTKjuB2gcFDJR6WG3m_opFTWG85goNs1RcFxNyC7AWjwukfjht4EYxTVexKJ2WTFw01POI5EK-6S0tWSvjY7g4gbWIMU24t2JyPC2kdw2NgmPBDapstLcGqKJGRmLRCoh0J1w5guUzYOETl-iH20hB7sjKWH2sdA9PGisDMtNMeP5YJXSMjXDeYPm5ua-aKHidCTSkCNoQx_Gqb4D6E-7x3xaHzSrmUi1Jf9geTPzh-Y9jErpTR3zQCo9lHayjEv"/>
+<span>Demi Wilkinson</span>
+</div>
+</td>
+<td class="px-6 py-4">Morning (08:00 - 16:00)</td>
+<td class="px-6 py-4">2023-10-25</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cancelled/20 text-cancelled">Cancelled</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<nav aria-label="Table navigation" class="flex items-center justify-between pt-4">
+<span class="text-sm font-normal text-slate-500 dark:text-slate-400">Showing <span class="font-semibold text-slate-900 dark:text-white">1-4</span> of <span class="font-semibold text-slate-900 dark:text-white">100</span></span>
+<ul class="inline-flex -space-x-px text-sm h-8">
+<li>
+<a class="flex items-center justify-center px-3 h-8 ml-0 leading-tight text-slate-500 bg-white border border-slate-300 rounded-l-lg hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white" href="#">Previous</a>
+</li>
+<li>
+<a class="flex items-center justify-center px-3 h-8 leading-tight text-primary bg-primary/20 border border-primary hover:bg-primary/30 dark:border-slate-700 dark:text-white" href="#">1</a>
+</li>
+<li>
+<a class="flex items-center justify-center px-3 h-8 leading-tight text-slate-500 bg-white border border-slate-300 hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white" href="#">2</a>
+</li>
+<li>
+<a class="flex items-center justify-center px-3 h-8 leading-tight text-slate-500 bg-white border border-slate-300 rounded-r-lg hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white" href="#">Next</a>
+</li>
+</ul>
+</nav>
+</div>
+</main>
+</div>
+</div>
+</body></html>

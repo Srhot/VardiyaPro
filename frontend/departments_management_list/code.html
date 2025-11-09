@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VardiyaPro - Manage Departments</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#005A9C",
+            "background-light": "#f6f6f8",
+            "background-dark": "#111621",
+            "grey": {
+                "subtle": "#F0F2F5",
+                "text": "#333333",
+                "inactive": "#6c757d"
+            },
+            "success": "#28A745"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-grey-text dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-row">
+<!-- SideNavBar -->
+<aside class="flex h-screen min-h-screen w-64 flex-col justify-between border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-background-dark p-4 sticky top-0">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="VardiyaPro company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDy-AjZ3hX5JBt4d8VlYFD9m24Cp_xqtbiYNkFGxPfH4JTGGtbwXc_96m9jyHAuhBEIy6eeJdbf8yvAdhJLyWPBSzagHOg3RVm258vDrVTyf05rIW5jYNOrZOfZ1x2Tb3fnxLcWlVwd6V4uAk_4Z2lkycn0E4X-2GhSreXimTGedVeIonY6U67m3lPbgl6w8FEVBOztGklRpLpssgOoQXAIuuoeU7qsS3lJ2rpsw5dff8WuMv8ELYkIO96_0AhJUgu7I6x4GQIzXNBd");'></div>
+<div class="flex flex-col">
+<h1 class="text-grey-text dark:text-white text-base font-bold leading-normal">VardiyaPro</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Shift Management</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">calendar_month</span>
+<p class="text-sm font-medium leading-normal">Shifts</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+<p class="text-sm font-medium leading-normal">Employees</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 bg-primary/20 dark:bg-primary/30 text-primary dark:text-white" href="#">
+<span class="material-symbols-outlined text-2xl">apartment</span>
+<p class="text-sm font-bold leading-normal">Departments</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">help</span>
+<p class="text-sm font-medium leading-normal">Help</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-primary/20" href="#">
+<span class="material-symbols-outlined text-2xl">logout</span>
+<p class="text-sm font-medium leading-normal">Log Out</p>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8">
+<div class="mx-auto max-w-7xl">
+<!-- PageHeading -->
+<header class="mb-6">
+<h1 class="text-grey-text dark:text-white text-3xl font-bold leading-tight tracking-tight">Manage Departments</h1>
+</header>
+<div class="space-y-6">
+<!-- ToolBar -->
+<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700">
+<div class="flex flex-1 gap-4">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-slate-700 pl-10 focus:border-primary focus:ring-primary dark:focus:border-primary dark:focus:ring-primary" placeholder="Search departments..." type="text"/>
+</div>
+<div class="relative">
+<select class="rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-slate-700 focus:border-primary focus:ring-primary dark:focus:border-primary dark:focus:ring-primary">
+<option>All Statuses</option>
+<option>Active</option>
+<option>Inactive</option>
+</select>
+</div>
+</div>
+<button class="flex h-10 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary/90">
+<span class="material-symbols-outlined text-xl">add</span>
+<span class="truncate">Create New Department</span>
+</button>
+</div>
+<!-- Table -->
+<div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-grey-subtle dark:bg-slate-700">
+<tr>
+<th class="w-2/5 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-grey-text dark:text-gray-300">Name</th>
+<th class="w-2/5 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-grey-text dark:text-gray-300">Description</th>
+<th class="w-1/5 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-grey-text dark:text-gray-300">Status</th>
+<th class="w-auto px-6 py-3 text-sm font-semibold uppercase tracking-wider text-grey-text dark:text-gray-300 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+<tr class="hover:bg-grey-subtle/50 dark:hover:bg-slate-700/50">
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-sm font-medium text-grey-text dark:text-white">Human Resources</td>
+<td class="h-[72px] px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400 max-w-md">Manages employee relations, recruitment, and benefits.</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success dark:bg-success/20 dark:text-green-300">Active</span>
+</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-grey-subtle/50 dark:hover:bg-slate-700/50">
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-sm font-medium text-grey-text dark:text-white">Engineering</td>
+<td class="h-[72px] px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400 max-w-md">Responsible for product development and infrastructure.</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success dark:bg-success/20 dark:text-green-300">Active</span>
+</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-grey-subtle/50 dark:hover:bg-slate-700/50">
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-sm font-medium text-grey-text dark:text-white">Sales &amp; Marketing</td>
+<td class="h-[72px] px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400 max-w-md">Drives business growth and customer outreach.</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success dark:bg-success/20 dark:text-green-300">Active</span>
+</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-grey-subtle/50 dark:hover:bg-slate-700/50">
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-sm font-medium text-grey-text dark:text-white">Support</td>
+<td class="h-[72px] px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400 max-w-md">Provides assistance and technical support to customers.</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-grey-inactive dark:text-gray-400">Inactive</span>
+</td>
+<td class="h-[72px] px-6 py-4 whitespace-nowrap text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="flex size-8 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Empty State Example (commented out)
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                    <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">domain_disabled</span>
+                    <p class="mt-4 text-lg font-semibold text-grey-text dark:text-gray-300">No departments found</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or create a new department.</p>
+                </div>
+              -->
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-center border-t border-gray-200 dark:border-gray-700 p-4">
+<nav class="flex items-center gap-2">
+<a class="flex size-9 items-center justify-center rounded-lg text-gray-500 hover:bg-grey-subtle dark:hover:bg-slate-700 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined text-xl">chevron_left</span>
+</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-bold text-white bg-primary" href="#">1</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-medium text-grey-text dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-slate-700" href="#">2</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-medium text-grey-text dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-slate-700" href="#">3</a>
+<span class="flex size-9 items-center justify-center text-sm font-medium text-grey-text dark:text-gray-300">...</span>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-medium text-grey-text dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-slate-700" href="#">8</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-medium text-grey-text dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-slate-700" href="#">9</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-sm font-medium text-grey-text dark:text-gray-300 hover:bg-grey-subtle dark:hover:bg-slate-700" href="#">10</a>
+<a class="flex size-9 items-center justify-center rounded-lg text-gray-500 hover:bg-grey-subtle dark:hover:bg-slate-700 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

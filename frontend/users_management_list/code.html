@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VardiyaPro - User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#3B82F6", // Professional and trustworthy blue
+            "background-light": "#F9FAFB",
+            "background-dark": "#111827",
+            "text-light": "#1F2937",
+            "text-dark": "#F9FAFB",
+            "border-light": "#E5E7EB",
+            "border-dark": "#374151",
+            "surface-light": "#FFFFFF",
+            "surface-dark": "#1F2937",
+            "subtle-text-light": "#6B7280",
+            "subtle-text-dark": "#9CA3AF",
+            "active-green": "#10B981",
+            "inactive-gray": "#6B7280"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem", // 4px
+            "lg": "0.5rem",   // 8px
+            "xl": "0.75rem",  // 12px
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+<div class="flex h-screen">
+<!-- SideNavBar -->
+<aside class="flex-shrink-0 w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="VardiyaPro company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAq17b39FFFs2fXXppzRU7UvPRi6HQYJc20-77OkMVrw1dXVkzsJpMEr6KH2RZsZcVi7YWjpGAsA0wze7Z2g1QFWtub4ICZqoi3T208QofiVvMXUz4Js0j487ZNfmJ-QbMGAmXBARMBcaHfkvo8jPfBBGW-EvTBd4juR7XES4Z-rCj4UV0ssSvJIl5iPab-2FoJsHnzi33hlxIXvj0cByplWPmnT3wMsGprabmFeYw7CmhVvIP-J_W-2MpvcK3KaHNH3d56XSqkYYgd");'></div>
+<div class="flex flex-col">
+<h1 class="text-text-light dark:text-text-dark text-base font-bold leading-normal">VardiyaPro</h1>
+<p class="text-subtle-text-light dark:text-subtle-text-dark text-sm font-normal leading-normal">Shift Management</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">grid_view</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">calendar_month</span>
+<p class="text-sm font-medium leading-normal">Shifts</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">group</span>
+<p class="text-sm font-bold leading-normal">Users</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">corporate_fare</span>
+<p class="text-sm font-medium leading-normal">Departments</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">monitoring</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10" href="#">
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark">help</span>
+<p class="text-sm font-medium leading-normal">Help</p>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<div class="p-8 space-y-6">
+<!-- PageHeading -->
+<header class="flex flex-wrap justify-between items-center gap-4">
+<h1 class="text-3xl font-bold tracking-tight text-text-light dark:text-text-dark">User Management</h1>
+<button class="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Create User</span>
+</button>
+</header>
+<!-- Search and Filters -->
+<div class="space-y-4">
+<!-- SearchBar -->
+<div class="flex items-center bg-surface-light dark:bg-surface-dark rounded-lg border border-border-light dark:border-border-dark shadow-sm">
+<div class="pl-4 pr-2 text-subtle-text-light dark:text-subtle-text-dark">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full min-w-0 flex-1 resize-none overflow-hidden text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-none bg-transparent h-11 placeholder:text-subtle-text-light dark:placeholder:text-subtle-text-dark text-base font-normal leading-normal" placeholder="Search by name or email..." value=""/>
+</div>
+<!-- Chips -->
+<div class="flex flex-wrap items-center gap-3">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark pl-4 pr-2 hover:bg-background-light dark:hover:bg-background-dark">
+<p class="text-sm font-medium leading-normal">Role</p>
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark" style="font-size: 20px;">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark pl-4 pr-2 hover:bg-background-light dark:hover:bg-background-dark">
+<p class="text-sm font-medium leading-normal">Department</p>
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark" style="font-size: 20px;">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark pl-4 pr-2 hover:bg-background-light dark:hover:bg-background-dark">
+<p class="text-sm font-medium leading-normal">Status</p>
+<span class="material-symbols-outlined text-subtle-text-light dark:text-subtle-text-dark" style="font-size: 20px;">expand_more</span>
+</button>
+<div class="flex-grow"></div>
+<button class="text-sm font-medium text-primary hover:underline">Reset Filters</button>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm">
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+<thead class="bg-background-light dark:bg-background-dark">
+<tr>
+<th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-text-light dark:text-text-dark sm:pl-6" scope="col"><input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-surface-light dark:bg-surface-dark" type="checkbox"/></th>
+<th class="px-3 py-3.5 text-left text-sm font-semibold text-text-light dark:text-text-dark" scope="col">Name</th>
+<th class="px-3 py-3.5 text-left text-sm font-semibold text-text-light dark:text-text-dark" scope="col">Email</th>
+<th class="px-3 py-3.5 text-left text-sm font-semibold text-text-light dark:text-text-dark" scope="col">Role</th>
+<th class="px-3 py-3.5 text-left text-sm font-semibold text-text-light dark:text-text-dark" scope="col">Department</th>
+<th class="px-3 py-3.5 text-left text-sm font-semibold text-text-light dark:text-text-dark" scope="col">Status</th>
+<th class="relative py-3.5 pl-3 pr-4 sm:pr-6" scope="col"><span class="sr-only">Actions</span></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light dark:divide-border-dark bg-surface-light dark:bg-surface-dark">
+<tr>
+<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6"><input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-surface-light dark:bg-surface-dark" type="checkbox"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-text-light dark:text-text-dark">Zahra Al-Jamil</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">zahra.jamil@example.com</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Manager</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Engineering</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm">
+<span class="inline-flex items-center rounded-full bg-active-green/10 px-2 py-1 text-xs font-medium text-active-green">Active</span>
+</td>
+<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+<div class="flex items-center justify-end gap-4">
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">edit</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">visibility</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">toggle_off</span></a>
+</div>
+</td>
+</tr>
+<tr>
+<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6"><input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-surface-light dark:bg-surface-dark" type="checkbox"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-text-light dark:text-text-dark">Ben Carter</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">ben.carter@example.com</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Employee</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Sales</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm">
+<span class="inline-flex items-center rounded-full bg-active-green/10 px-2 py-1 text-xs font-medium text-active-green">Active</span>
+</td>
+<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+<div class="flex items-center justify-end gap-4">
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">edit</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">visibility</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">toggle_off</span></a>
+</div>
+</td>
+</tr>
+<tr>
+<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6"><input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-surface-light dark:bg-surface-dark" type="checkbox"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-text-light dark:text-text-dark">David Kim</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">david.kim@example.com</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Employee</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Engineering</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm">
+<span class="inline-flex items-center rounded-full bg-inactive-gray/10 px-2 py-1 text-xs font-medium text-inactive-gray">Inactive</span>
+</td>
+<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+<div class="flex items-center justify-end gap-4">
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">edit</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">visibility</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">toggle_on</span></a>
+</div>
+</td>
+</tr>
+<tr>
+<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6"><input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-surface-light dark:bg-surface-dark" type="checkbox"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-text-light dark:text-text-dark">Casey Lee</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">casey.lee@example.com</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">Admin</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm text-subtle-text-light dark:text-subtle-text-dark">HR</td>
+<td class="whitespace-nowrap px-3 py-4 text-sm">
+<span class="inline-flex items-center rounded-full bg-active-green/10 px-2 py-1 text-xs font-medium text-active-green">Active</span>
+</td>
+<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+<div class="flex items-center justify-end gap-4">
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">edit</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">visibility</span></a>
+<a class="text-subtle-text-light dark:text-subtle-text-dark hover:text-primary" href="#"><span class="material-symbols-outlined">toggle_off</span></a>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Pagination Controls -->
+<nav aria-label="Pagination" class="flex items-center justify-between border-t border-border-light dark:border-border-dark px-4 py-3 sm:px-6">
+<div class="hidden sm:block">
+<p class="text-sm text-subtle-text-light dark:text-subtle-text-dark">Showing <span class="font-medium">1</span> to <span class="font-medium">4</span> of <span class="font-medium">4</span> results</p>
+</div>
+<div class="flex flex-1 justify-between sm:justify-end gap-2">
+<a class="relative inline-flex items-center rounded-md bg-surface-light dark:bg-surface-dark px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-border-light dark:ring-border-dark hover:bg-background-light dark:hover:bg-background-dark" href="#">Previous</a>
+<a class="relative inline-flex items-center rounded-md bg-surface-light dark:bg-surface-dark px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-border-light dark:ring-border-dark hover:bg-background-light dark:hover:bg-background-dark" href="#">Next</a>
+</div>
+</nav>
+</div>
+</main>
+</div>
+</body></html>
