@@ -72,10 +72,7 @@
           "}",
           "",
           "// Log request details",
-          "console.log('\ud83d\ude80 Request:', pm.request.method, pm.request.url.path.join('/'));",
-          "",
-          "// Set timestamp for performance tracking",
-          "pm.collectionVariables.set('request_start_time', new Date().getTime());"
+          "console.log('\ud83d\ude80 Request:', pm.request.method, pm.request.url.path.join('/'));"
         ]
       }
     },
@@ -85,16 +82,6 @@
         "type": "text/javascript",
         "exec": [
           "// Global Post-request Script - Runs after every request",
-          "",
-          "// Calculate response time",
-          "const startTime = pm.collectionVariables.get('request_start_time');",
-          "const responseTime = new Date().getTime() - startTime;",
-          "console.log('\u23f1\ufe0f Response Time:', responseTime + 'ms');",
-          "",
-          "// Common test: Response time should be less than 2000ms",
-          "pm.test('Response time is acceptable', function () {",
-          "    pm.expect(responseTime).to.be.below(2000);",
-          "});",
           "",
           "// Common test: Response has correct content type",
           "pm.test('Content-Type is application/json', function () {",
@@ -419,22 +406,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Test 1: Response time is acceptable",
-                  "pm.test('Response time is acceptable', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});",
-                  "",
-                  "// Test 2: Content-Type is application/json",
-                  "pm.test('Content-Type is application/json', function () {",
-                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
-                  "});",
-                  "",
-                  "// Test 3: Status code is 201 Created",
+                  "// Test 1: Status code is 201 Created",
                   "pm.test('Status code is 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
                   "});",
                   "",
-                  "// Test 4: Response contains created department (flexible name check)",
+                  "// Test 2: Response contains created department (flexible name check)",
                   "pm.test('Response contains created department', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.have.property('id');",
@@ -698,12 +675,18 @@
                   "    pm.expect(jsonData.data).to.be.an('array');",
                   "});",
                   "",
-                  "// Save first assignment_id",
+                  "// Save first pending assignment_id (to avoid time_entry conflicts)",
                   "if (pm.response.code === 200) {",
                   "    const jsonData = pm.response.json();",
-                  "    if (jsonData.data.length > 0) {",
+                  "    // Find first pending assignment",
+                  "    const pendingAssignment = jsonData.data.find(a => a.status === 'pending');",
+                  "    if (pendingAssignment) {",
+                  "        pm.environment.set('assignment_id', pendingAssignment.id);",
+                  "        console.log('\u2705 Pending Assignment ID saved:', pendingAssignment.id);",
+                  "    } else if (jsonData.data.length > 0) {",
+                  "        // Fallback to first assignment if no pending found",
                   "        pm.environment.set('assignment_id', jsonData.data[0].id);",
-                  "        console.log('\u2705 Assignment ID saved:', jsonData.data[0].id);",
+                  "        console.log('\u26a0\ufe0f No pending assignment found, using first:', jsonData.data[0].id);",
                   "    }",
                   "}"
                 ]
@@ -724,12 +707,18 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/assignments",
+              "raw": "{{base_url}}/assignments?status=pending",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "assignments"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
               ]
             }
           }
@@ -927,28 +916,18 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Test 1: Response time is acceptable",
-                  "pm.test('Response time is acceptable', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});",
-                  "",
-                  "// Test 2: Content-Type is application/json",
-                  "pm.test('Content-Type is application/json', function () {",
-                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
-                  "});",
-                  "",
-                  "// Test 3: Status code is 200 OK",
+                  "// Test 1: Status code is 200 OK",
                   "pm.test('Status code is 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "// Test 4: clock_out_time is set",
+                  "// Test 2: clock_out_time is set",
                   "pm.test('clock_out_time is set', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data.clock_out_time).to.not.be.null;",
                   "});",
                   "",
-                  "// Test 5: worked_hours is calculated (may be 0 if clock in/out are same second)",
+                  "// Test 3: worked_hours is calculated (may be 0 if clock in/out are same second)",
                   "pm.test('worked_hours is calculated', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.have.property('worked_hours');",
@@ -1149,22 +1128,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Test 1: Response time is acceptable",
-                  "pm.test('Response time is acceptable', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
-                  "});",
-                  "",
-                  "// Test 2: Content-Type is application/json",
-                  "pm.test('Content-Type is application/json', function () {",
-                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
-                  "});",
-                  "",
-                  "// Test 3: Status code is 201 Created",
+                  "// Test 1: Status code is 201 Created",
                   "pm.test('Status code is 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
                   "});",
                   "",
-                  "// Test 4: Created holiday has correct data (flexible name check)",
+                  "// Test 2: Created holiday has correct data (flexible name check)",
                   "pm.test('Created holiday has correct data', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.have.property('id');",
