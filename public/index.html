@@ -62,7 +62,11 @@
                 departments: [],
                 users: [],
                 shifts: [],
-                assignments: []
+                assignments: [],
+                holidays: [],
+                notifications: [],
+                timeEntries: [],
+                auditLogs: []
             }
         };
 
@@ -186,6 +190,50 @@
             }
         }
 
+        async function fetchHolidays() {
+            try {
+                const data = await apiCall('/holidays');
+                state.data.holidays = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load holidays', 'error');
+                return [];
+            }
+        }
+
+        async function fetchNotifications() {
+            try {
+                const data = await apiCall('/notifications');
+                state.data.notifications = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load notifications', 'error');
+                return [];
+            }
+        }
+
+        async function fetchTimeEntries() {
+            try {
+                const data = await apiCall('/time_entries');
+                state.data.timeEntries = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load time entries', 'error');
+                return [];
+            }
+        }
+
+        async function fetchAuditLogs() {
+            try {
+                const data = await apiCall('/audit_logs');
+                state.data.auditLogs = data.data;
+                return data.data;
+            } catch (error) {
+                showToast('Failed to load audit logs', 'error');
+                return [];
+            }
+        }
+
         // ========================================
         // CRUD OPERATIONS
         // ========================================
@@ -265,10 +313,15 @@
             const { user } = state;
             const menuItems = [
                 { name: 'Dashboard', icon: 'dashboard', view: 'dashboard', roles: ['admin', 'hr', 'manager', 'employee'] },
+                { name: 'Time Tracking', icon: 'schedule', view: 'time-tracking', roles: ['admin', 'hr', 'manager', 'employee'] },
                 { name: 'Departments', icon: 'apartment', view: 'departments', roles: ['admin', 'hr'] },
                 { name: 'Users', icon: 'group', view: 'users', roles: ['admin', 'hr'] },
                 { name: 'Shifts', icon: 'calendar_month', view: 'shifts', roles: ['admin', 'hr', 'manager'] },
                 { name: 'Assignments', icon: 'assignment', view: 'assignments', roles: ['admin', 'hr', 'manager', 'employee'] },
+                { name: 'Holidays', icon: 'celebration', view: 'holidays', roles: ['admin'] },
+                { name: 'Notifications', icon: 'notifications', view: 'notifications', roles: ['admin', 'hr', 'manager', 'employee'] },
+                { name: 'Reports', icon: 'analytics', view: 'reports', roles: ['admin', 'hr', 'manager'] },
+                { name: 'Audit Logs', icon: 'history', view: 'audit-logs', roles: ['admin'] },
             ];
 
             const filteredItems = menuItems.filter(item => item.roles.includes(user.role));
@@ -857,6 +910,565 @@
         }
 
         // ========================================
+        // VIEW: TIME TRACKING
+        // ========================================
+        async function renderTimeTracking() {
+            const timeEntries = await fetchTimeEntries();
+            const myAssignments = await fetchAssignments();
+
+            // For employees, show their own assignments with clock in/out
+            const isEmployee = state.user.role === 'employee';
+            const todayAssignment = myAssignments.find(a => {
+                if (!a.shift) return false;
+                const shiftDate = new Date(a.shift.start_time).toDateString();
+                const today = new Date().toDateString();
+                return shiftDate === today && a.status === 'confirmed';
+            });
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Time Tracking</h2>
+                        <p class="text-gray-600">Clock in and out of shifts</p>
+                    </div>
+
+                    ${isEmployee && todayAssignment ? `
+                        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg p-8 text-white">
+                            <h3 class="text-2xl font-bold mb-4">Today's Shift</h3>
+                            <div class="mb-6">
+                                <p class="text-lg opacity-90">${todayAssignment.shift.title}</p>
+                                <p class="opacity-75">${new Date(todayAssignment.shift.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(todayAssignment.shift.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button
+                                    onclick="handleClockIn(${todayAssignment.id})"
+                                    class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition"
+                                >
+                                    <span class="material-symbols-outlined text-3xl">login</span>
+                                    <p class="mt-2">Clock In</p>
+                                </button>
+                                <button
+                                    class="bg-white text-blue-600 py-4 rounded-lg font-semibold hover:bg-blue-50 transition"
+                                >
+                                    <span class="material-symbols-outlined text-3xl">logout</span>
+                                    <p class="mt-2">Clock Out</p>
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900">Time Entries</h3>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shift</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clock In</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clock Out</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${timeEntries.slice(0, 15).map(entry => {
+                                    const clockIn = new Date(entry.clock_in_time);
+                                    const clockOut = entry.clock_out_time ? new Date(entry.clock_out_time) : null;
+                                    const hours = clockOut ? ((clockOut - clockIn) / (1000 * 60 * 60)).toFixed(2) : '-';
+
+                                    return `
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="font-medium text-gray-900">${entry.assignment?.employee?.name || 'N/A'}</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="text-sm text-gray-600">${entry.assignment?.shift?.title || 'N/A'}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                ${clockIn.toLocaleString()}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                ${clockOut ? clockOut.toLocaleString() : '-'}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                    ${hours} hrs
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        async function handleClockIn(assignmentId) {
+            try {
+                await apiCall(`/assignments/${assignmentId}/clock_in`, {
+                    method: 'POST',
+                    body: JSON.stringify({ notes: 'Clocked in via web app' })
+                });
+                showToast('Clocked in successfully', 'success');
+                navigateTo('time-tracking');
+            } catch (error) {
+                showToast('Failed to clock in: ' + error.message, 'error');
+            }
+        }
+
+        // ========================================
+        // VIEW: HOLIDAYS
+        // ========================================
+        async function renderHolidays() {
+            const holidays = await fetchHolidays();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Holidays</h2>
+                            <p class="text-gray-600">Manage system-wide holidays</p>
+                        </div>
+                        <button
+                            onclick="showCreateHolidayModal()"
+                            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                        >
+                            <span class="material-symbols-outlined">add</span>
+                            <span>Add Holiday</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Holiday Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${holidays.map(holiday => {
+                                    const holidayDate = new Date(holiday.date);
+                                    const today = new Date();
+                                    const isPast = holidayDate < today;
+                                    const isUpcoming = !isPast;
+
+                                    return `
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="font-medium text-gray-900">${holiday.name}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                ${holidayDate.toLocaleDateString()}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full ${isUpcoming ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}">
+                                                    ${isUpcoming ? 'Upcoming' : 'Past'}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <button
+                                                    onclick="deleteHoliday(${holiday.id})"
+                                                    class="text-red-600 hover:text-red-800"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        function showCreateHolidayModal() {
+            showModal(`
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Add Holiday</h3>
+                    <form onsubmit="handleCreateHoliday(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                placeholder="e.g., New Year's Day"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input
+                                type="date"
+                                name="date"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                            >
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-700">
+                                Create
+                            </button>
+                            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        async function handleCreateHoliday(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            try {
+                await apiCall('/holidays', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: formData.get('name'),
+                        date: formData.get('date')
+                    })
+                });
+                showToast('Holiday created successfully', 'success');
+                closeModal();
+                navigateTo('holidays');
+            } catch (error) {
+                showToast('Failed to create holiday: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteHoliday(id) {
+            if (!confirm('Are you sure you want to delete this holiday?')) return;
+
+            try {
+                await apiCall(`/holidays/${id}`, { method: 'DELETE' });
+                showToast('Holiday deleted successfully', 'success');
+                navigateTo('holidays');
+            } catch (error) {
+                showToast('Failed to delete holiday: ' + error.message, 'error');
+            }
+        }
+
+        // ========================================
+        // VIEW: NOTIFICATIONS
+        // ========================================
+        async function renderNotifications() {
+            const notifications = await fetchNotifications();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Notifications</h2>
+                            <p class="text-gray-600">Your system notifications</p>
+                        </div>
+                        <button
+                            onclick="markAllAsRead()"
+                            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            Mark All as Read
+                        </button>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${notifications.length === 0 ? `
+                            <div class="bg-white rounded-lg shadow p-8 text-center">
+                                <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">notifications_off</span>
+                                <p class="text-gray-500">No notifications</p>
+                            </div>
+                        ` : notifications.map(notification => `
+                            <div class="bg-white rounded-lg shadow p-4 ${notification.read ? 'opacity-60' : ''}">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            ${!notification.read ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+                                            <p class="font-medium text-gray-900">${notification.title || 'Notification'}</p>
+                                        </div>
+                                        <p class="text-sm text-gray-600">${notification.message}</p>
+                                        <p class="text-xs text-gray-400 mt-2">${new Date(notification.created_at).toLocaleString()}</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        ${!notification.read ? `
+                                            <button
+                                                onclick="markAsRead(${notification.id})"
+                                                class="text-blue-600 hover:text-blue-800 text-sm"
+                                            >
+                                                Mark Read
+                                            </button>
+                                        ` : ''}
+                                        <button
+                                            onclick="deleteNotification(${notification.id})"
+                                            class="text-red-600 hover:text-red-800"
+                                        >
+                                            <span class="material-symbols-outlined text-sm">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `);
+        }
+
+        async function markAsRead(id) {
+            try {
+                await apiCall(`/notifications/${id}/mark_as_read`, { method: 'PATCH' });
+                showToast('Notification marked as read', 'success');
+                navigateTo('notifications');
+            } catch (error) {
+                showToast('Failed to mark as read', 'error');
+            }
+        }
+
+        async function markAllAsRead() {
+            try {
+                await apiCall('/notifications/mark_all_as_read', { method: 'PATCH' });
+                showToast('All notifications marked as read', 'success');
+                navigateTo('notifications');
+            } catch (error) {
+                showToast('Failed to mark all as read', 'error');
+            }
+        }
+
+        async function deleteNotification(id) {
+            try {
+                await apiCall(`/notifications/${id}`, { method: 'DELETE' });
+                showToast('Notification deleted', 'success');
+                navigateTo('notifications');
+            } catch (error) {
+                showToast('Failed to delete notification', 'error');
+            }
+        }
+
+        // ========================================
+        // VIEW: REPORTS
+        // ========================================
+        async function renderReports() {
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Reports</h2>
+                        <p class="text-gray-600">View system reports and analytics</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="material-symbols-outlined text-3xl text-blue-500">person</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Employee Report</h3>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">View detailed reports for individual employees including hours worked and shift distribution.</p>
+                            <button
+                                onclick="showEmployeeReportForm()"
+                                class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100"
+                            >
+                                Generate Report
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="material-symbols-outlined text-3xl text-green-500">apartment</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Department Report</h3>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Analyze department performance, shift coverage, and staff utilization metrics.</p>
+                            <button class="w-full bg-green-50 text-green-600 py-2 rounded-lg hover:bg-green-100">
+                                Generate Report
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="material-symbols-outlined text-3xl text-purple-500">schedule</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Overtime Report</h3>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Track overtime hours across all employees and departments for any date range.</p>
+                            <button class="w-full bg-purple-50 text-purple-600 py-2 rounded-lg hover:bg-purple-100">
+                                Generate Report
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="material-symbols-outlined text-3xl text-orange-500">analytics</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Summary Report</h3>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">System-wide statistics including total shifts, assignments, and user activity.</p>
+                            <button
+                                onclick="showSummaryReport()"
+                                class="w-full bg-orange-50 text-orange-600 py-2 rounded-lg hover:bg-orange-100"
+                            >
+                                View Summary
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        async function showSummaryReport() {
+            try {
+                const data = await apiCall('/reports/summary');
+                showModal(`
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Summary Report</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <p class="text-sm text-blue-600 font-medium">Total Users</p>
+                                    <p class="text-2xl font-bold text-blue-900">${data.data?.total_users || 0}</p>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <p class="text-sm text-green-600 font-medium">Total Shifts</p>
+                                    <p class="text-2xl font-bold text-green-900">${data.data?.total_shifts || 0}</p>
+                                </div>
+                                <div class="bg-purple-50 p-4 rounded-lg">
+                                    <p class="text-sm text-purple-600 font-medium">Assignments</p>
+                                    <p class="text-2xl font-bold text-purple-900">${data.data?.total_assignments || 0}</p>
+                                </div>
+                                <div class="bg-orange-50 p-4 rounded-lg">
+                                    <p class="text-sm text-orange-600 font-medium">Departments</p>
+                                    <p class="text-2xl font-bold text-orange-900">${data.data?.total_departments || 0}</p>
+                                </div>
+                            </div>
+                            <button onclick="closeModal()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                `);
+            } catch (error) {
+                showToast('Failed to load summary report', 'error');
+            }
+        }
+
+        function showEmployeeReportForm() {
+            showModal(`
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Employee Report</h3>
+                    <p class="text-sm text-gray-600 mb-4">Select an employee and date range to generate a detailed report.</p>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option>Select an employee...</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                        <button type="button" onclick="closeModal()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                            Close
+                        </button>
+                    </form>
+                </div>
+            `);
+        }
+
+        // ========================================
+        // VIEW: AUDIT LOGS
+        // ========================================
+        async function renderAuditLogs() {
+            const auditLogs = await fetchAuditLogs();
+
+            return renderLayout(`
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Audit Logs</h2>
+                        <p class="text-gray-600">System activity and change history</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${auditLogs.slice(0, 20).map(log => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${new Date(log.created_at).toLocaleString()}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">${log.user?.name || 'System'}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs rounded-full ${
+                                                log.action === 'create' ? 'bg-green-100 text-green-800' :
+                                                log.action === 'update' ? 'bg-blue-100 text-blue-800' :
+                                                log.action === 'destroy' ? 'bg-red-100 text-red-800' :
+                                                'bg-gray-100 text-gray-800'
+                                            }">
+                                                ${log.action}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            ${log.auditable_type || 'N/A'} #${log.auditable_id || ''}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                            <button
+                                                onclick="showAuditDetails(${log.id}, ${JSON.stringify(log.audited_changes || {}).replace(/"/g, '&quot;')})"
+                                                class="text-blue-600 hover:text-blue-800"
+                                            >
+                                                View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+
+        function showAuditDetails(id, changes) {
+            const changesObj = typeof changes === 'string' ? JSON.parse(changes) : changes;
+            const changesHtml = Object.keys(changesObj).length > 0
+                ? Object.entries(changesObj).map(([key, value]) => `
+                    <div class="flex justify-between py-2 border-b border-gray-100">
+                        <span class="font-medium text-gray-700">${key}:</span>
+                        <span class="text-gray-600">${Array.isArray(value) ? value.join(' → ') : value}</span>
+                    </div>
+                `).join('')
+                : '<p class="text-gray-500 text-sm">No changes recorded</p>';
+
+            showModal(`
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Audit Log Details</h3>
+                    <div class="space-y-2">
+                        ${changesHtml}
+                    </div>
+                    <button onclick="closeModal()" class="mt-4 w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                        Close
+                    </button>
+                </div>
+            `);
+        }
+
+        // ========================================
         // LAYOUT WRAPPER
         // ========================================
         function renderLayout(content) {
@@ -896,6 +1508,9 @@
                 case 'dashboard':
                     content = renderDashboard();
                     break;
+                case 'time-tracking':
+                    content = await renderTimeTracking();
+                    break;
                 case 'departments':
                     content = await renderDepartments();
                     break;
@@ -907,6 +1522,18 @@
                     break;
                 case 'assignments':
                     content = await renderAssignments();
+                    break;
+                case 'holidays':
+                    content = await renderHolidays();
+                    break;
+                case 'notifications':
+                    content = await renderNotifications();
+                    break;
+                case 'reports':
+                    content = await renderReports();
+                    break;
+                case 'audit-logs':
+                    content = await renderAuditLogs();
                     break;
                 default:
                     content = renderDashboard();
